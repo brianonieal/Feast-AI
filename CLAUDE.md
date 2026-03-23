@@ -10,6 +10,8 @@
 ```
 STEP 1: Read this file (CLAUDE.md)
 STEP 2: Read docs/VISION.md (what we're building and why)
+STEP 2.5: View docs/FEAST-AI-PANTHEON-v2-mockup.jpg (visual target for the app)
+        Read docs/blueprints/BRAND_ALIGNMENT.md (brand colors, typography, design patterns)
 STEP 3: Read docs/CONTRACT.md (inviolable rules and config)
 STEP 4: Read docs/CHANGELOG.md (last 10 entries)
 STEP 5: Health check:
@@ -93,7 +95,7 @@ feast-ai/
 |       |-- COUNCIL_AGENTS.md    <-- Agent architecture, prompts, tool schemas
 |       |-- INTEGRATIONS.md      <-- Circle, HubSpot, Instagram, WordPress APIs
 |       |-- DATA_MODEL.md        <-- Prisma schema design, entity relationships
-|       |-- DESIGN_SYSTEM.md     <-- PANTHEON tokens, components, mobile patterns
+|       |-- BRAND_ALIGNMENT.md   <-- Brand colors, typography, design patterns (replaces DESIGN_SYSTEM.md)
 |
 |-- .claude/
 |   |-- commands/
