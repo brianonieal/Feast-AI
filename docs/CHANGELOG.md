@@ -6,6 +6,39 @@ Format: [Conventional Changelog](https://www.conventionalcommits.org/)
 
 ---
 
+## [0.3.0] - Signal - 2026-03-23
+
+### Scope
+Inbound message handling via Twilio. @SAGE agent for intent classification and conversational intake.
+
+### Status: COMPLETE
+
+### Added
+- **InboundMessage model**: Prisma model with MessageChannel (SMS/WHATSAPP/EMAIL/WEB) and MessageIntent (8 intents) enums, linked to User, message logging with response tracking
+- **Shared types**: InboundMessage, IntentClassification, MessageChannel, MessageIntent types; Zod schemas including TwilioWebhookSchema
+- **Twilio integration**: twilio SDK, webhook signature verification, SMS send helper, phone-based user lookup
+- **@SAGE agent (first Council agent)**: system prompt from COUNCIL_AGENTS.md spec, intent classification via Claude claude-sonnet-4-6, conversational response generation with intent-specific guidance
+- **POST /api/webhooks/twilio**: Full pipeline — verify signature, parse payload, classify intent, log message, generate @SAGE response, send SMS reply, return TwiML
+- **Clerk middleware**: Added /api/webhooks/twilio as public route
+
+### Dependencies Added
+- `twilio` — SMS/WhatsApp messaging
+- `@anthropic-ai/sdk` — Direct Anthropic API access for Council agents
+- `ai` + `@ai-sdk/anthropic` — Vercel AI SDK with Anthropic provider
+
+### Definition of Done
+- [x] `pnpm typecheck` passes with 0 errors (3/3 packages)
+- [x] `npx prisma validate` passes
+- [x] `pnpm lint` passes with 0 warnings
+- [x] Twilio webhook handler processes inbound SMS
+- [x] Intent classification returns structured IntentClassification
+- [x] @SAGE generates contextual conversational responses
+- [x] Messages logged to InboundMessage table with intent + response
+- [ ] End-to-end SMS test (requires Twilio credentials + phone number)
+- [ ] Git tagged as v0.3.0
+
+---
+
 ## [0.2.0] - Conduit - 2026-03-23
 
 ### Scope

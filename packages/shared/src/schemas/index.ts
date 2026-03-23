@@ -15,3 +15,12 @@ export {
   CreateEventSchema,
   EventAttendanceSchema,
 } from "./event";
+
+// @version 0.3.0 - Signal: message schemas
+export {
+  MessageChannelSchema,
+  MessageIntentSchema,
+  IntentClassificationSchema,
+  InboundMessageSchema,
+  TwilioWebhookSchema,
+} from "./message";

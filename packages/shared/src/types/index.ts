@@ -22,3 +22,11 @@ export type {
   IntegrationStatus,
   BaseAdapter,
 } from "./adapter";
+
+// @version 0.3.0 - Signal: message types
+export type {
+  MessageChannel,
+  MessageIntent,
+  InboundMessage,
+  IntentClassification,
+} from "./message";
