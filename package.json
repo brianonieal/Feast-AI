@@ -24,12 +24,17 @@
       "@types/react": "~18.3.0"
     },
     "onlyBuiltDependencies": [
+      "@clerk/shared",
       "@prisma/client",
       "@prisma/engines",
-      "prisma",
+      "browser-tabs-lock",
+      "bufferutil",
+      "core-js",
       "esbuild",
+      "prisma",
       "sharp",
-      "unrs-resolver"
+      "unrs-resolver",
+      "utf-8-validate"
     ]
   }
 }

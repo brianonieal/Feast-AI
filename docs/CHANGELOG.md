@@ -6,6 +6,39 @@ Format: [Conventional Changelog](https://www.conventionalcommits.org/)
 
 ---
 
+## [0.2.0] - Conduit - 2026-03-23
+
+### Scope
+Authentication, user profile, and platform connector scaffolding (Circle.so, HubSpot).
+
+### Status: COMPLETE
+
+### Added
+- **Clerk Auth (API)**: @clerk/nextjs middleware protecting all non-public routes, auth helpers (getAuthUser, requireAuth, getClerkUserDetails), Clerk webhook handler for user.created/updated/deleted sync to Prisma DB, svix webhook verification
+- **Clerk Auth (Mobile)**: ClerkProvider in root layout with expo-secure-store token cache, sign in screen (email/password), sign up screen with email verification flow, auth layout group
+- **Profile Screen**: Real user data from Clerk (avatar initial, name, email), sign out button, settings section placeholders matching PANTHEON mockup
+- **Circle.so Adapter**: Scaffold with typed health check (GET /spaces), singleton instance, API key auth
+- **HubSpot Adapter**: Scaffold with typed health check (GET /crm/v3/objects/contacts), singleton instance, Bearer token auth
+- **Integration Status Endpoint**: GET /api/integrations/status returns parallel health checks for all adapters
+- **Shared Types**: BaseAdapter interface, AdapterHealthResult, IntegrationStatus types
+- **CONTRACT.md**: Bumped CURRENT_VERSION to 0.2.0
+
+### Definition of Done
+- [x] `pnpm typecheck` passes with 0 errors (3/3 packages)
+- [x] `npx prisma validate` passes
+- [x] `pnpm lint` passes with 0 warnings
+- [x] Clerk auth flow: sign up, sign in, sign out (mobile screens built)
+- [x] Protected API routes with Clerk middleware
+- [x] User profile screen with Clerk data
+- [x] Circle.so adapter scaffold with health check
+- [x] HubSpot adapter scaffold with health check
+- [x] GET /api/integrations/status returns both adapter statuses
+- [ ] Auth flow works end-to-end (requires Clerk keys + device test)
+- [ ] Adapters connect successfully (requires API keys)
+- [ ] Git tagged as v0.2.0
+
+---
+
 ## [0.1.0] - Foundation - 2026-03-23
 
 ### Scope
@@ -29,4 +62,4 @@ Project scaffolding, monorepo setup, shared types, health check endpoint, mobile
 - [x] Health check endpoint returns `{ status: "ok", version: "0.1.0" }`
 - [ ] Mobile app launches in Expo Go with 5 tabs visible (requires device/emulator)
 - [x] All shared types importable from both apps/api and apps/mobile
-- [ ] Git tagged as v0.1.0
+- [x] Git tagged as v0.1.0
