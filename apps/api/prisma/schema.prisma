@@ -1,0 +1,108 @@
+// @version 0.1.0 - Foundation scaffold
+// Feast-AI Prisma Schema
+// Only includes models for current version scope
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// --- Enums ---
+
+enum UserRole {
+  ATTENDEE
+  HOST
+  FACILITATOR
+  ADMIN
+}
+
+enum CommunityTier {
+  PUBLIC
+  REGIONAL
+  FUNDERS
+  COOPERATIVE
+}
+
+enum EventType {
+  OPEN
+  CLOSED
+}
+
+enum EventStatus {
+  DRAFT
+  SCHEDULED
+  MARKETED
+  LIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum RSVPStatus {
+  INTERESTED
+  CONFIRMED
+  DECLINED
+  ATTENDED
+  NO_SHOW
+}
+
+// --- Models ---
+
+model User {
+  id            String        @id @default(cuid())
+  clerkId       String        @unique @map("clerk_id")
+  email         String        @unique
+  name          String?
+  phone         String?
+  city          String?
+  role          UserRole      @default(ATTENDEE)
+  communityTier CommunityTier @default(PUBLIC) @map("community_tier")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+  deletedAt     DateTime?     @map("deleted_at")
+
+  hostedEvents FeastEvent[]      @relation("HostedEvents")
+  attendances  EventAttendance[]
+
+  @@map("users")
+}
+
+model FeastEvent {
+  id            String        @id @default(cuid())
+  name          String
+  description   String?
+  date          DateTime
+  location      String
+  city          String
+  capacity      Int           @default(12)
+  type          EventType     @default(OPEN)
+  status        EventStatus   @default(DRAFT)
+  communityTier CommunityTier @default(PUBLIC) @map("community_tier")
+  circlePostId  String?       @map("circle_post_id")
+  circleEventId String?       @map("circle_event_id")
+  hostId        String        @map("host_id")
+  host          User          @relation("HostedEvents", fields: [hostId], references: [id])
+  attendances   EventAttendance[]
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+  deletedAt     DateTime?     @map("deleted_at")
+
+  @@map("feast_events")
+}
+
+model EventAttendance {
+  id        String     @id @default(cuid())
+  userId    String     @map("user_id")
+  eventId   String     @map("event_id")
+  status    RSVPStatus @default(INTERESTED)
+  user      User       @relation(fields: [userId], references: [id])
+  event     FeastEvent @relation(fields: [eventId], references: [id])
+  createdAt DateTime   @default(now()) @map("created_at")
+
+  @@unique([userId, eventId])
+  @@map("event_attendances")
+}
