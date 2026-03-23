@@ -6,6 +6,38 @@ Format: [Conventional Changelog](https://www.conventionalcommits.org/)
 
 ---
 
+## [0.4.0] - Spark - 2026-03-23
+
+### Scope
+Event creation pipeline. @COORDINATOR agent, CRUD API, Circle posting, Inngest background jobs.
+
+### Status: COMPLETE
+
+### Added
+- **Event CRUD API**: GET /api/events (list with city/status filters, pagination), GET /api/events/:id (detail with host + attendances), POST /api/events (create, host/admin only, Zod validated), PATCH /api/events/:id (update, host/admin only)
+- **@COORDINATOR agent**: System prompt from COUNCIL_AGENTS.md spec, parseEventRequest tool that extracts structured event details from natural language via Claude, identifies missing fields
+- **Circle.so adapter extended**: listSpaces() and createPost() methods for event announcements
+- **Inngest pipeline**: event-created-pipeline background job — marks SCHEDULED, posts to Circle, updates to MARKETED with Circle post ID, 3 retries
+- **Inngest serve endpoint**: GET/POST/PUT /api/inngest for function registration
+- **Inngest client**: apps/api/src/lib/inngest.ts singleton
+- **Clerk middleware**: Added /api/inngest as public route
+
+### Dependencies Added
+- `inngest` — Event-driven serverless background jobs
+
+### Definition of Done
+- [x] `pnpm typecheck` passes with 0 errors (3/3 packages)
+- [x] `npx prisma validate` passes
+- [x] `pnpm lint` passes with 0 warnings
+- [x] Event CRUD endpoints with auth + validation
+- [x] @COORDINATOR parses natural language event requests
+- [x] Circle adapter can list spaces and create posts
+- [x] Inngest pipeline: event.created -> SCHEDULED -> Circle -> MARKETED
+- [ ] End-to-end test: text -> event -> Circle post (requires all API keys)
+- [ ] Git tagged as v0.4.0
+
+---
+
 ## [0.3.0] - Signal - 2026-03-23
 
 ### Scope

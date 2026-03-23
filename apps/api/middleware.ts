@@ -6,6 +6,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/auth/webhook(.*)",
   "/api/integrations/status(.*)",
   "/api/webhooks/twilio(.*)",
+  "/api/inngest(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
