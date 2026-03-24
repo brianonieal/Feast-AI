@@ -23,40 +23,39 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(50, Math.max(1, Number(url.searchParams.get("limit") ?? "20")));
   const intentFilter = url.searchParams.get("intent");
 
-  // Fetch all three datasets in parallel
-  const [applications, intents, regions, appTotal, intentTotal] =
-    await Promise.all([
-      db.application.findMany({
-        include: { user: { select: { name: true, email: true } } },
-        orderBy: { createdAt: "desc" },
-        skip: (page - 1) * limit,
-        take: limit,
-      }),
-      db.memberIntent.findMany({
-        where: intentFilter
-          ? // ESCAPE: MemberIntentType enum requires uppercase, filter comes lowercase
-            { intent: intentFilter.toUpperCase() as never }
-          : undefined,
-        orderBy: { createdAt: "desc" },
-        skip: (page - 1) * limit,
-        take: limit,
-      }),
-      db.regionalInterest.findMany({
-        orderBy: { count: "desc" },
-        take: 20,
-      }),
-      db.application.count(),
-      db.memberIntent.count(
-        intentFilter
-          ? { where: { intent: intentFilter.toUpperCase() as never } }
-          : undefined
-      ),
-    ]);
+  // Fetch datasets separately for clear typing (avoids implicit any in Vercel strict mode)
+  const intentWhere = intentFilter
+    ? // ESCAPE: MemberIntentType enum requires uppercase, filter comes lowercase
+      { intent: intentFilter.toUpperCase() as never }
+    : undefined;
+
+  const applications = await db.application.findMany({
+    orderBy: { createdAt: "desc" },
+    skip: (page - 1) * limit,
+    take: limit,
+  });
+
+  const intents = await db.memberIntent.findMany({
+    where: intentWhere,
+    orderBy: { createdAt: "desc" },
+    skip: (page - 1) * limit,
+    take: limit,
+  });
+
+  const regions = await db.regionalInterest.findMany({
+    orderBy: { count: "desc" },
+    take: 20,
+  });
+
+  const [appTotal, intentTotal] = await Promise.all([
+    db.application.count(),
+    db.memberIntent.count(intentWhere ? { where: intentWhere } : undefined),
+  ]);
 
   return NextResponse.json({
     success: true,
     data: {
-      applications: applications.map((a) => ({
+      applications: applications.map((a: typeof applications[number]) => ({
         id: a.id,
         name: a.name,
         city: a.city,
@@ -64,7 +63,7 @@ export async function GET(req: NextRequest) {
         status: a.status,
         createdAt: a.createdAt,
       })),
-      intents: intents.map((i) => ({
+      intents: intents.map((i: typeof intents[number]) => ({
         id: i.id,
         name: i.name,
         email: i.email,
@@ -74,7 +73,7 @@ export async function GET(req: NextRequest) {
         source: i.source,
         createdAt: i.createdAt,
       })),
-      regions: regions.map((r) => ({
+      regions: regions.map((r: typeof regions[number]) => ({
         city: r.city,
         count: r.count,
       })),
