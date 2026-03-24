@@ -1,6 +1,7 @@
 // @version 0.5.0 - Echo: web app scaffold
 // @version 0.7.0 - Compass: added API rewrite proxy
 // @version 0.8.0 - Shield: wrapped with Sentry
+// @version 1.0.0 - Feast: env-based API URL for production
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
@@ -10,7 +11,9 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "http://localhost:3000/api/:path*",
+        destination: process.env.NEXT_PUBLIC_API_URL
+          ? `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`
+          : "http://localhost:3000/api/:path*",
       },
     ];
   },
