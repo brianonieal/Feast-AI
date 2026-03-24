@@ -26,7 +26,8 @@
       "Bash(find D:/Feast-AI/node_modules/.pnpm -path */resend/dist/* -name *.d.ts)",
       "Bash(find D:/Feast-AI/node_modules/.pnpm -path */resend* -maxdepth 1 -type d)",
       "Bash(pnpm --filter api add @sentry/nextjs)",
-      "Bash(pnpm --filter web add @sentry/nextjs)"
+      "Bash(pnpm --filter web add @sentry/nextjs)",
+      "Bash(pnpm --filter api build)"
     ]
   }
 }

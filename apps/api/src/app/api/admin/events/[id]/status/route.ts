@@ -6,18 +6,29 @@ import { auth } from "@clerk/nextjs/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { applyRateLimit } from "@/lib/rateLimit";
-import { EventStatus } from "@prisma/client";
+
+// Build-safe enum — z.enum with string literals instead of Prisma nativeEnum
+const EVENT_STATUSES = [
+  "DRAFT",
+  "SCHEDULED",
+  "MARKETED",
+  "LIVE",
+  "COMPLETED",
+  "CANCELLED",
+] as const;
+
+type EventStatusValue = (typeof EVENT_STATUSES)[number];
 
 const StatusSchema = z.object({
-  status: z.nativeEnum(EventStatus),
+  status: z.enum(EVENT_STATUSES),
 });
 
 // Valid status transitions — forward only (no going backwards)
-const VALID_TRANSITIONS: Record<EventStatus, EventStatus[]> = {
-  DRAFT: [EventStatus.SCHEDULED, EventStatus.CANCELLED],
-  SCHEDULED: [EventStatus.MARKETED, EventStatus.CANCELLED],
-  MARKETED: [EventStatus.LIVE, EventStatus.CANCELLED],
-  LIVE: [EventStatus.COMPLETED, EventStatus.CANCELLED],
+const VALID_TRANSITIONS: Record<EventStatusValue, EventStatusValue[]> = {
+  DRAFT: ["SCHEDULED", "CANCELLED"],
+  SCHEDULED: ["MARKETED", "CANCELLED"],
+  MARKETED: ["LIVE", "CANCELLED"],
+  LIVE: ["COMPLETED", "CANCELLED"],
   COMPLETED: [],
   CANCELLED: [],
 };
