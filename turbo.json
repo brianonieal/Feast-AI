@@ -23,7 +23,9 @@
         "SENTRY_AUTH_TOKEN",
         "NEXT_PUBLIC_SENTRY_DSN",
         "NEXT_PUBLIC_API_URL",
-        "FEAST_FROM_EMAIL"
+        "FEAST_FROM_EMAIL",
+        "AUTH_URL",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY"
       ]
     },
     "typecheck": {

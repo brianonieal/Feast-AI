@@ -71,7 +71,8 @@ export async function PATCH(
     );
   }
 
-  const allowed = VALID_TRANSITIONS[event.status] ?? [];
+  const currentStatus = event.status as EventStatusValue;
+  const allowed = VALID_TRANSITIONS[currentStatus] ?? [];
   if (!allowed.includes(parsed.data.status)) {
     return NextResponse.json(
       {
