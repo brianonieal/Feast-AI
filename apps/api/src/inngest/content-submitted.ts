@@ -17,7 +17,8 @@ import type { ContentPipelineInput, DinnerQuote } from "@feast-ai/shared";
  * 6. Post recap to Circle
  * 7. Mark submission as READY_FOR_REVIEW
  */
-export const contentSubmittedPipeline = inngest.createFunction(
+// ESCAPE: Inngest v4 inferred type not portable without Fetch reference — explicit any avoids build error
+export const contentSubmittedPipeline: ReturnType<typeof inngest.createFunction> = inngest.createFunction(
   {
     id: "content-submitted-pipeline",
     name: "Content Submitted Pipeline",

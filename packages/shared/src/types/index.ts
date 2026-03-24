@@ -53,8 +53,17 @@ export type {
   CouncilJobStatus,
   CouncilJobOutput,
   CouncilJob,
-  DistributionTarget,
 } from "./ai";
+
+// @version 0.6.0 - Beacon: distribution types (supersedes ai.ts DistributionTarget)
+export type {
+  DistributionChannel,
+  DistributionTarget,
+  DistributionResult,
+  ApprovalQueueItem,
+} from "./distribution";
+
+export { getDistributionTargets } from "./distribution";
 
 // @version 0.5.0 - Echo: content types
 export type {

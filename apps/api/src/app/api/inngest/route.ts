@@ -1,9 +1,9 @@
 // @version 0.4.0 - Spark: Inngest serve endpoint
 import { serve } from "inngest/next";
 import { inngest } from "@/lib/inngest";
-import { eventCreatedPipeline, contentSubmittedPipeline } from "@/inngest";
+import { eventCreatedPipeline, contentSubmittedPipeline, contentApprovedPipeline } from "@/inngest";
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
-  functions: [eventCreatedPipeline, contentSubmittedPipeline],
+  functions: [eventCreatedPipeline, contentSubmittedPipeline, contentApprovedPipeline],
 });

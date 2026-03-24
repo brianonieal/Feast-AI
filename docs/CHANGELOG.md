@@ -6,6 +6,48 @@ Format: [Conventional Changelog](https://www.conventionalcommits.org/)
 
 ---
 
+## [0.6.0] - Beacon - 2026-03-24
+
+**Scope**: Multi-channel content distribution engine
+**Status**: COMPLETE
+
+### Added
+- **Prisma models**: `ContentApprovalQueue` (14 fields, approval workflow), `DistributionLog` (audit trail), `ApprovalStatus` enum
+- **Shared types**: `packages/shared/src/types/distribution.ts` — `DistributionChannel`, `DistributionTarget`, `DistributionResult`, `ApprovalQueueItem`, `getDistributionTargets()`
+- **Rate limiting**: `apps/api/src/lib/rateLimit.ts` — Upstash Redis singleton, 3 tiers (standard 60/min, distribution 10/min, webhook 100/min)
+- **Instagram adapter**: `apps/api/src/integrations/instagram/adapter.ts` + `types.ts` — createContainer, publishContainer, post (deferred to v0.7.x, requires Meta app review)
+- **HubSpot email methods**: `sendTransactionalEmail()`, `sendToList()` added to existing adapter + `types.ts`
+- **Distribution service**: `apps/api/src/services/distribution.ts` — sequential multi-channel orchestration with per-channel logging
+- **API route**: `POST /api/content/approve` — admin approve/reject queue items, triggers Inngest on approval
+- **API route**: `POST /api/content/distribute` — manual distribution trigger for approved items
+- **Inngest function**: `content-approved-pipeline` — fetches queue item, determines targets, calls distributeContent()
+- **Dependencies**: `@upstash/ratelimit`, `@upstash/redis` (apps/api only)
+
+### Changed
+- **Inngest type annotations**: Added `ReturnType<typeof inngest.createFunction>` to all 3 pipeline exports (fixes Inngest v4 + Next.js build portability issue)
+- **Distribution routing**: Public events → hubspot_email + circle_public. Closed events → circle_tier + crm_regional
+- **Instagram deferred**: Removed from `DistributionChannel` and `getDistributionTargets()` — adapter stays in codebase for v0.7.x
+
+### Definition of Done
+- [x] pnpm typecheck: 4/4 packages, 0 errors
+- [x] pnpm lint: 4/4 packages, 0 warnings
+- [x] npx prisma validate: passes
+- [x] next build (API): 10 routes, 0 errors
+- [x] next build (web): 13 static pages, 0 errors
+- [x] ContentApprovalQueue model in schema
+- [x] DistributionLog model in schema
+- [x] Rate limiting on /api/content/approve (standard) and /api/content/distribute (distribution)
+- [x] Instagram adapter createContainer + publishContainer (deferred — not called in v0.6.0)
+- [x] HubSpot adapter sendToList
+- [x] distributeContent() routes correctly for open vs closed events
+- [x] content-approved-pipeline registered in Inngest serve route
+- [x] All new env vars documented in .env.example
+- [x] CHANGELOG.md updated
+- [ ] Git tagged as v0.6.0 (pending)
+- [ ] prisma migrate dev (pending — requires live DATABASE_URL)
+
+---
+
 ## [pre-0.6.0] - CommunityTier enum alignment - 2026-03-23
 
 ### Changed

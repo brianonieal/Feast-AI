@@ -19,7 +19,9 @@
       "Bash(npx --package prisma@6 prisma validate --schema prisma/schema.prisma)",
       "Bash(npx --package prisma@6 prisma generate --schema prisma/schema.prisma)",
       "Bash(find D:/Feast-AI/apps/mobile -name *.ts -o -name *.tsx)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Bash(pnpm --filter api add @upstash/ratelimit @upstash/redis)",
+      "Bash(npx next:*)"
     ]
   }
 }

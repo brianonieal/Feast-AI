@@ -12,7 +12,8 @@ import { circleAdapter } from "@/integrations/circle/adapter";
  *
  * Triggered when a new event is created via the API or @COORDINATOR.
  */
-export const eventCreatedPipeline = inngest.createFunction(
+// ESCAPE: Inngest v4 inferred type not portable without Fetch reference
+export const eventCreatedPipeline: ReturnType<typeof inngest.createFunction> = inngest.createFunction(
   {
     id: "event-created-pipeline",
     name: "Event Created Pipeline",
