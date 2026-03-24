@@ -1,5 +1,7 @@
 // @version 0.6.0 - Beacon: Upstash Redis rate limiting
-// Three tiers: standard (60/min), distribution (10/min), webhook (100/min)
+// @version 0.8.0 - Shield: added ai (5/min) and auth (10/min) tiers
+// Five tiers: standard (60/min), distribution (10/min), webhook (100/min),
+//             ai (5/min), auth (10/min)
 // Singleton Redis client — same pattern as db.ts
 
 import { Ratelimit } from "@upstash/ratelimit";
@@ -48,6 +50,22 @@ export const rateLimiters = {
     limiter: Ratelimit.slidingWindow(100, "1 m"),
     analytics: true,
     prefix: "feast:webhook",
+  }),
+
+  // AI routes: 5 per minute (each call costs money via Claude API)
+  ai: new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(5, "1 m"),
+    analytics: true,
+    prefix: "feast:ai",
+  }),
+
+  // Auth routes: 10 per minute (prevent brute force)
+  auth: new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(10, "1 m"),
+    analytics: true,
+    prefix: "feast:auth",
   }),
 };
 

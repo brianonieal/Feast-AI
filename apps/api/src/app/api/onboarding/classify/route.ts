@@ -18,7 +18,7 @@ const ClassifySchema = z.object({
 /** POST /api/onboarding/classify — classify a new member's intent */
 export async function POST(req: NextRequest): Promise<NextResponse> {
   // Rate limit first — unauthenticated route hitting Claude API
-  const limited = await applyRateLimit(req, "standard");
+  const limited = await applyRateLimit(req, "ai");
   if (limited) return limited;
 
   const body = (await req.json()) as unknown;

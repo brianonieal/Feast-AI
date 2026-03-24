@@ -78,6 +78,16 @@ export type {
 
 export { ONBOARDING_PATHS } from "./onboarding";
 
+// @version 0.8.0 - Shield: @GUARDIAN agent + cost monitoring types
+export type {
+  AgentName,
+  ModelName,
+  SpendRecord,
+  DailySpendSummary,
+} from "./guardian";
+
+export { MODEL_COSTS, estimateCost, SPEND_LIMITS } from "./guardian";
+
 // @version 0.5.0 - Echo: content types
 export type {
   ContentStatus,

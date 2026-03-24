@@ -349,3 +349,39 @@ model RegionalInterest {
 
   @@map("regional_interest")
 }
+
+// @version 0.8.0 - Shield: cost monitoring
+model AgentSpendLog {
+  id            String   @id @default(cuid())
+  agent         String                     // @SAGE, @COORDINATOR, etc.
+  model         String                     // claude-sonnet-4-6, etc.
+  action        String                     // which tool or operation
+  inputTokens   Int      @map("input_tokens")
+  outputTokens  Int      @map("output_tokens")
+  costUsd       Float    @map("cost_usd")
+  durationMs    Int      @map("duration_ms")
+  success       Boolean  @default(true)
+  error         String?
+  correlationId String?  @map("correlation_id")
+  environment   String   @default("development")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([agent, createdAt])
+  @@index([createdAt])
+  @@map("agent_spend_logs")
+}
+
+model DailySpendReport {
+  id              String    @id @default(cuid())
+  date            DateTime  @unique
+  totalCostUsd    Float     @map("total_cost_usd")
+  byAgent         Json      @map("by_agent")
+  callCount       Int       @map("call_count")
+  limitUsd        Float     @map("limit_usd")
+  percentUsed     Float     @map("percent_used")
+  downgradedAt    DateTime? @map("downgraded_at")
+  alertSent       Boolean   @default(false) @map("alert_sent")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@map("daily_spend_reports")
+}

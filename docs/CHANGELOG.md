@@ -6,6 +6,53 @@ Format: [Conventional Changelog](https://www.conventionalcommits.org/)
 
 ---
 
+## [0.8.0] - Shield - 2026-03-24
+
+**Scope**: Security + monitoring + @GUARDIAN agent + Sentry + cost controls
+**Status**: COMPLETE
+
+### Added
+- **Prisma models**: `AgentSpendLog` (per-call cost tracking, 13 fields, 2 indexes), `DailySpendReport` (daily summary with downgrade tracking)
+- **Shared types**: `packages/shared/src/types/guardian.ts` — `AgentName`, `ModelName`, `MODEL_COSTS`, `estimateCost()`, `SpendRecord`, `DailySpendSummary`, `SPEND_LIMITS`
+- **Cost tracker**: `apps/api/src/lib/costTracker.ts` — `trackedCall()` wraps all Anthropic API calls with automatic cost logging, spend limit enforcement, auto-downgrade at 90%. 60s spend cache to minimize DB queries. Module-level model override with serverless caveat documented.
+- **@GUARDIAN agent**: `apps/api/src/council/guardian/index.ts` — `getDailySpendSummary()`, `runDailyReport()`, `downgradeAllAgents()`, `restoreAgentModels()`. Status cascade: ≥90% downgraded, ≥80% critical, ≥50% warning, else normal.
+- **Inngest function**: `daily-cost-report` (cron `0 0 * * *` UTC) — restores model defaults at start of day, generates daily spend report. 5 total Inngest functions.
+- **API route**: `GET /api/guardian/spend` — live spend summary + historical date lookup via `?date=` param. 30s Cache-Control header. 13 total API routes.
+- **Rate limit tiers**: Added `ai` (5/min) and `auth` (10/min) to existing 3 tiers. `/api/onboarding/classify` upgraded from `standard` to `ai`.
+- **Sentry (apps/api)**: `@sentry/nextjs` with v8 instrumentation pattern. `src/instrumentation.ts` with server + edge init, `onRequestError` hook. 6 ignored error codes.
+- **Sentry (apps/web)**: `@sentry/nextjs` with `src/instrumentation.ts` (server + edge), `src/instrumentation-client.ts` (browser), `onRouterTransitionStart` hook. `global-error.tsx` with Sentry capture + Feast-branded error page.
+- **Dependency**: `@sentry/nextjs` (apps/api + apps/web)
+
+### Notable decisions
+- **Sentry v8 instrumentation pattern**: Blueprint specified deprecated `sentry.server.config.ts` / `sentry.edge.config.ts` files. Adapted to v8's `instrumentation.ts` `register()` hook pattern — the correct approach for Next.js 15.
+- **`sourcemaps.disable` over `hideSourceMaps`**: Older option removed from Sentry v8 type definitions.
+- **Module-level model override**: Acceptable for v0.8.0 — resets on serverless cold starts. Redis-backed persistence planned for v0.9.0.
+- **60s spend cache**: Prevents DB query on every AI call while still catching limit breaches within 1 minute.
+- **Spending limits**: $5/day dev, $25/day prod. Warning at 80%, auto-downgrade to Haiku at 90%, hard block at 100%.
+- **`/api/webhooks/twilio` kept on webhook tier**: Even though it calls @SAGE, inbound webhook volume is controlled by Twilio, and AI cost is managed by @GUARDIAN spend limits.
+
+### Definition of Done
+- [x] pnpm typecheck: 4/4 packages, 0 errors
+- [x] pnpm lint: 4/4 packages, 0 warnings
+- [x] npx prisma validate: passes
+- [x] next build (API): 13 routes, 0 errors
+- [x] next build (web): 13 static pages, 0 errors
+- [x] AgentSpendLog model in schema
+- [x] DailySpendReport model in schema
+- [x] trackedCall() logs cost after every Anthropic API call
+- [x] Auto-downgrade triggers at 90% of daily limit
+- [x] getDailySpendSummary() returns correct totals
+- [x] daily-cost-report Inngest function registered (5 total)
+- [x] /api/guardian/spend returns spend summary
+- [x] Sentry initialized in apps/api (graceful when DSN missing)
+- [x] Sentry initialized in apps/web (graceful when DSN missing)
+- [x] global-error.tsx captures exceptions to Sentry
+- [x] 'ai' rate limit tier applied to AI-triggering routes
+- [x] CHANGELOG.md updated
+- [x] Git tagged as v0.8.0
+
+---
+
 ## [0.7.0] - Compass - 2026-03-24
 
 **Scope**: Member onboarding + AI classification + CRM sync + welcome emails

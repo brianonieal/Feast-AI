@@ -6,6 +6,7 @@ import {
   contentSubmittedPipeline,
   contentApprovedPipeline,
   applicationSubmittedPipeline,
+  dailyCostReportFunction,
 } from "@/inngest";
 
 export const { GET, POST, PUT } = serve({
@@ -15,5 +16,6 @@ export const { GET, POST, PUT } = serve({
     contentSubmittedPipeline,
     contentApprovedPipeline,
     applicationSubmittedPipeline,
+    dailyCostReportFunction,
   ],
 });
