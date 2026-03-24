@@ -29,19 +29,17 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const [summary, recentLogs] = await Promise.all([
-    getDailySpendSummary(),
-    db.agentSpendLog.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 20,
-    }),
-  ]);
+  const summary = await getDailySpendSummary();
+  const recentLogs = await db.agentSpendLog.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 20,
+  });
 
   return NextResponse.json({
     success: true,
     data: {
       summary,
-      recentLogs: recentLogs.map((log) => ({
+      recentLogs: recentLogs.map((log: typeof recentLogs[number]) => ({
         id: log.id,
         agent: log.agent,
         model: log.model,

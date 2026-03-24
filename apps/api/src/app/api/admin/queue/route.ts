@@ -24,22 +24,20 @@ export async function GET(req: NextRequest) {
 
   const where = { status: "PENDING" as const };
 
-  const [items, total] = await Promise.all([
-    db.contentApprovalQueue.findMany({
-      where,
-      include: {
-        event: { select: { name: true, date: true, city: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * limit,
-      take: limit,
-    }),
-    db.contentApprovalQueue.count({ where }),
-  ]);
+  const items = await db.contentApprovalQueue.findMany({
+    where,
+    include: {
+      event: { select: { name: true, date: true, city: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    skip: (page - 1) * limit,
+    take: limit,
+  });
+  const total = await db.contentApprovalQueue.count({ where });
 
   return NextResponse.json({
     success: true,
-    data: items.map((item) => ({
+    data: items.map((item: typeof items[number]) => ({
       id: item.id,
       eventName: item.event.name,
       eventDate: item.event.date,
