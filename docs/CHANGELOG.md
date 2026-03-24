@@ -6,6 +6,71 @@ Format: [Conventional Changelog](https://www.conventionalcommits.org/)
 
 ---
 
+## [0.9.0] - Lens - 2026-03-24
+
+**Scope**: Admin dashboard — event management, content queue, members, agent status, integrations
+**Status**: COMPLETE
+
+### Added — Admin Pages (apps/web)
+- **Admin shell**: `(admin)/layout.tsx` — role-guarded (`canViewHostDashboard`), sidebar + content layout
+- **Admin redirect**: `/admin/page.tsx` → redirects to `/admin/events`
+- **Events page**: `/admin/events/page.tsx` — stats row (4 cards), status + city filter pills, 7-column data table with EventStatusBadge, "New Event" CTA stub
+- **Queue page**: `/admin/queue/page.tsx` — stats (3 cards), channel filter pills, ApprovalQueueCard list with optimistic approve/reject
+- **Members page**: `/admin/members/page.tsx` — 3 sub-sections (Applications with approve/reject, Member Intents with MemberIntentBadge, Regional Interest with inline progress bars)
+- **Agents page**: `/admin/system/agents/page.tsx` — SpendMeter, 4 stat cards, model override banner, agent breakdown table, recent activity table (founding_table only)
+- **Integrations page**: `/admin/system/integrations/page.tsx` — 6 integration cards in 2-col grid, 30s auto-refresh, "Refresh All" button, relative timestamp (founding_table only)
+
+### Added — Admin Components (apps/web)
+- `AdminShell.tsx` — sidebar + content wrapper
+- `AdminSidebar.tsx` — nav with active state via usePathname, SYSTEM section hidden for non-founding_table
+- `AdminStatCard.tsx` — number + label + optional delta (teal positive, coral negative)
+- `AdminDataTable.tsx` — generic table with skeleton loading, empty state, alternating rows
+- `EventStatusBadge.tsx` — 6-status pill (DRAFT/SCHEDULED/MARKETED/LIVE/COMPLETED/CANCELLED)
+- `ApprovalQueueCard.tsx` — left-border accent by channel, 150-char preview, action buttons
+- `MemberIntentBadge.tsx` — 5-intent pill (ATTEND/HOST/FACILITATE/DIY/NEWSLETTER)
+- `SpendMeter.tsx` — progress bar colored by status, DOWNGRADED badge, dollar display
+
+### Added — Admin API Routes (apps/api)
+- `GET /api/admin/events` — paginated, status/city filters, host name, attendance count
+- `PATCH /api/admin/events/[id]/status` — transition validation (forward-only + CANCELLED)
+- `GET /api/admin/queue` — PENDING content queue items with event info
+- `GET /api/admin/members` — applications + intents + regional interest in one response
+- `PATCH /api/admin/applications/[id]/status` — approve/reject with ALREADY_PROCESSED guard
+- `GET /api/admin/system/agents` — spend summary + last 20 logs (founding_table only)
+- `GET /api/admin/system/integrations` — Promise.allSettled health checks + static stubs (founding_table only)
+
+### Added — Middleware
+- `/admin/*` route protection: role-based (host, facilitator, kitchen, founding_table)
+- `/admin/system/*` route protection: founding_table tier only
+
+### Notable decisions
+- **Two-tier access control**: `/admin/*` for hosts/facilitators/kitchen/founding_table, `/admin/system/*` for founding_table only. Enforced in both middleware (server) and layout (client).
+- **Optimistic UI**: Approve/reject actions update local state immediately, then fire API call. No loading spinners between actions.
+- **Client-side filtering**: Events and queue pages filter in-browser with useMemo rather than re-fetching from API. Reduces server load for small datasets.
+- **30s auto-refresh on integrations**: setInterval with cleanup to prevent memory leaks. 5s tick timer for relative timestamp accuracy.
+- **Static NOT CONFIGURED stubs**: Twilio and WordPress shown as cards even though adapters aren't wired, so the integrations page always shows the full service inventory.
+
+### Definition of Done
+- [x] pnpm typecheck: 4/4 packages, 0 errors
+- [x] pnpm lint: 4/4 packages, 0 warnings
+- [x] npx prisma validate: passes
+- [x] next build (API): 20 routes, 0 errors
+- [x] next build (Web): 19 static pages, 0 errors
+- [x] /admin/* redirects unauthenticated to /sign-in
+- [x] /admin/* redirects commons-tier attendees to /home
+- [x] /admin/system/* redirects non-founding_table to /admin/events
+- [x] All 7 admin API routes return data correctly
+- [x] Events page: event list + status update
+- [x] Queue page: PENDING items + approve/reject
+- [x] Members page: applications + intents + regional interest
+- [x] Agents page: spend summary + SpendMeter
+- [x] Integrations page: health cards + auto-refresh
+- [x] AdminSidebar SYSTEM section hidden for non-founding_table
+- [x] CHANGELOG.md updated
+- [x] Git tagged as v0.9.0
+
+---
+
 ## [0.8.0] - Shield - 2026-03-24
 
 **Scope**: Security + monitoring + @GUARDIAN agent + Sentry + cost controls
