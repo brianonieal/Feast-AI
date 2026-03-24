@@ -6,6 +6,53 @@ Format: [Conventional Changelog](https://www.conventionalcommits.org/)
 
 ---
 
+## [0.7.0] - Compass - 2026-03-24
+
+**Scope**: Member onboarding + AI classification + CRM sync + welcome emails
+**Status**: COMPLETE
+
+### Added
+- **Prisma models**: `Application` (role, status, motivation, city), `RegionalInterest` (city normalization + interest tracking), `MemberIntentType` enum, `ApplicationRole` enum, `ApplicationStatus` enum
+- **Shared types**: `packages/shared/src/types/onboarding.ts` — `MemberIntentType`, `ApplicationRole`, `ApplicationStatus`, `ClassificationResult`, `OnboardingPath`, `EmailTemplate`, `ONBOARDING_PATHS`, `ApplicationSubmission`
+- **Resend email adapter**: `apps/api/src/integrations/resend/adapter.ts` — sendWelcomeEmail, sendApplicationConfirmation, sendGenericEmail. Lazy client init, graceful stub when RESEND_API_KEY missing. Resend v6 discriminated union pattern.
+- **@SAGE classification**: `apps/api/src/council/sage/classifyOnboarding.ts` — Claude-powered intent classifier. JSON-only system prompt, code fence stripping, confidence clamping, intent validation. 5 intents: attend, host, facilitate, diy, newsletter.
+- **Onboarding service**: `apps/api/src/services/onboarding.ts` — processOnboarding() orchestrates classify → upsert RegionalInterest → save Application → send welcome email → trigger Inngest pipeline. City normalization on upsert. HubSpot sync stubbed with TODO.
+- **API route**: `POST /api/applications` — authenticated, rate-limited (standard), Zod validation, duplicate check (409), Inngest fail-safe pattern, lowercase→uppercase enum conversion.
+- **API route**: `POST /api/onboarding/classify` — unauthenticated (pre-registration flow), rate-limited (standard), returns classification result with suggested path.
+- **Inngest function**: `application-submitted-pipeline` — fetches application, builds classification message from role + motivation, runs processOnboarding(), marks application processing_complete.
+- **Dependency**: `resend@^6.9.4` (apps/api only)
+- **Web config**: API proxy rewrite in `apps/web/next.config.ts` (`/api/:path*` → `http://localhost:3000/api/:path*`)
+- **ApplicationForm.tsx**: Wired to real POST /api/applications endpoint. Added isSubmitting + error states, 409 duplicate handling, coral error display, disabled states during submission.
+
+### Notable decisions
+- **Resend over HubSpot for email**: HubSpot transactional email requires Marketing Hub Professional. Resend is simpler, cheaper, and purpose-built for transactional email. HubSpot sync stubbed with explicit TODO for v0.8.0.
+- **Unauthenticated classify route**: Intentional — runs before user has an account (new visitor onboarding flow). Rate-limited to prevent abuse of Claude API calls.
+- **API proxy rewrite**: Required because web (port 3001) and API (port 3000) are separate Next.js apps in development. Without the rewrite, form submissions would 404.
+- **classifyOnboarding.ts not classify.ts**: Existing `classify.ts` in sage/ handles SMS conversation classification. New file named to avoid collision.
+
+### Definition of Done
+- [x] pnpm typecheck: 4/4 packages, 0 errors
+- [x] pnpm lint: 4/4 packages, 0 warnings
+- [x] npx prisma validate: passes
+- [x] next build (API): 12 routes, 0 errors
+- [x] next build (web): 13 static pages, 0 errors
+- [x] Application model in Prisma schema
+- [x] RegionalInterest model in Prisma schema
+- [x] Resend adapter with welcome + confirmation templates
+- [x] @SAGE classifyOnboarding with 5 intents
+- [x] processOnboarding() full pipeline
+- [x] POST /api/applications (auth + rate limit + Zod + duplicate check)
+- [x] POST /api/onboarding/classify (no auth + rate limit)
+- [x] application-submitted-pipeline registered in Inngest (4 total)
+- [x] ApplicationForm.tsx wired to real endpoint
+- [x] API proxy rewrite in next.config.ts
+- [x] .env.example updated with RESEND_API_KEY
+- [x] CHANGELOG.md updated
+- [x] Git tagged as v0.7.0
+- [ ] prisma migrate dev (pending — requires live DATABASE_URL)
+
+---
+
 ## [0.6.0] - Beacon - 2026-03-24
 
 **Scope**: Multi-channel content distribution engine

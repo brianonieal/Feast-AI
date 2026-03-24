@@ -65,6 +65,19 @@ export type {
 
 export { getDistributionTargets } from "./distribution";
 
+// @version 0.7.0 - Compass: onboarding + classification types
+export type {
+  MemberIntentType,
+  ApplicationRole,
+  ApplicationStatus,
+  ClassificationResult,
+  OnboardingPath,
+  EmailTemplate,
+  ApplicationSubmission,
+} from "./onboarding";
+
+export { ONBOARDING_PATHS } from "./onboarding";
+
 // @version 0.5.0 - Echo: content types
 export type {
   ContentStatus,

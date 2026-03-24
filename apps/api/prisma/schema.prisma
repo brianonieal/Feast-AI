@@ -88,6 +88,8 @@ model User {
   inboundMessages    InboundMessage[]
   reflections        Reflection[]
   contentSubmissions ContentSubmission[]
+  applications       Application[]
+  memberIntents      MemberIntent[]
 
   @@map("users")
 }
@@ -276,4 +278,74 @@ model DistributionLog {
   createdAt   DateTime       @default(now()) @map("created_at")
 
   @@map("distribution_logs")
+}
+
+// @version 0.7.0 - Compass: application + onboarding models
+
+enum ApplicationRole {
+  HOST
+  FACILITATOR
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WAITLISTED
+}
+
+model Application {
+  id          String            @id @default(cuid())
+  userId      String            @map("user_id")
+  user        User              @relation(fields: [userId], references: [id])
+  role        ApplicationRole
+  name        String
+  city        String
+  isOrganizer String?           @map("is_organizer")
+  motivation  String?
+  status      ApplicationStatus @default(PENDING)
+  reviewedBy  String?           @map("reviewed_by")
+  reviewedAt  DateTime?         @map("reviewed_at")
+  notes       String?
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  @@map("applications")
+}
+
+enum MemberIntentType {
+  ATTEND
+  HOST
+  FACILITATE
+  DIY
+  NEWSLETTER
+}
+
+model MemberIntent {
+  id               String           @id @default(cuid())
+  userId           String?          @map("user_id")
+  user             User?            @relation(fields: [userId], references: [id])
+  email            String?
+  name             String?
+  city             String?
+  intent           MemberIntentType
+  confidence       Float            @default(0)
+  rawInput         String?          @map("raw_input")
+  source           String           @default("web")
+  hubspotContactId String?          @map("hubspot_contact_id")
+  emailSent        Boolean          @default(false) @map("email_sent")
+  emailSentAt      DateTime?        @map("email_sent_at")
+  createdAt        DateTime         @default(now()) @map("created_at")
+
+  @@map("member_intents")
+}
+
+model RegionalInterest {
+  id        String   @id @default(cuid())
+  city      String   @unique
+  region    String?
+  count     Int      @default(1)
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("regional_interest")
 }

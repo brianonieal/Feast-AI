@@ -36,5 +36,8 @@
       "unrs-resolver",
       "utf-8-validate"
     ]
+  },
+  "dependencies": {
+    "@sentry/nextjs": "10"
   }
 }

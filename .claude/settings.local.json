@@ -21,7 +21,10 @@
       "Bash(find D:/Feast-AI/apps/mobile -name *.ts -o -name *.tsx)",
       "Bash(pnpm build:*)",
       "Bash(pnpm --filter api add @upstash/ratelimit @upstash/redis)",
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "Bash(pnpm --filter api add resend)",
+      "Bash(find D:/Feast-AI/node_modules/.pnpm -path */resend/dist/* -name *.d.ts)",
+      "Bash(find D:/Feast-AI/node_modules/.pnpm -path */resend* -maxdepth 1 -type d)"
     ]
   }
 }

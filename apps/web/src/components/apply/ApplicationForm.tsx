@@ -1,7 +1,6 @@
 // @version 0.5.0 - Echo: Application form for host/facilitator role
+// @version 0.7.0 - Compass: wired to POST /api/applications
 // Matches mockup Row 2 Col 1 — single-page form, no multi-step wizard
-// Plain useState for form state — no react-hook-form this sprint
-// Submit is a stub — console.log only, no API call
 "use client";
 
 import { useState } from "react";
@@ -36,17 +35,47 @@ export function ApplicationForm() {
   const [organizer, setOrganizer] = useState("");
   const [draws, setDraws] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = () => {
-    // Stub — console.log only, no API call this sprint
-    console.log("[ApplicationForm] submit:", {
-      selectedRole,
-      name,
-      city,
-      organizer,
-      draws,
-    });
-    setSubmitted(true);
+  const handleSubmit = async () => {
+    if (!selectedRole || !name || !city) return;
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          role: selectedRole,
+          name,
+          city,
+          isOrganizer: organizer || undefined,
+          motivation: draws || undefined,
+        }),
+      });
+
+      const data = (await res.json()) as {
+        success?: boolean;
+        error?: string;
+        code?: string;
+      };
+
+      if (res.ok) {
+        setSubmitted(true);
+      } else if (res.status === 409) {
+        setError("You already have a pending application for this role.");
+      } else {
+        setError("Something went wrong. Please try again.");
+        console.error("Application error:", data);
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -143,13 +172,17 @@ export function ApplicationForm() {
       </div>
 
       {/* ─── PART C: Submit ─── */}
+      {error && (
+        <p className="text-coral text-sm text-center mb-2">{error}</p>
+      )}
+
       <button
         type="button"
         onClick={handleSubmit}
-        disabled={submitted}
-        className="w-full bg-mustard text-white rounded-full py-3 font-sans font-medium hover:bg-mustard/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        disabled={isSubmitting || submitted || !selectedRole || !name || !city}
+        className="w-full bg-mustard text-white rounded-full py-3 font-sans font-medium hover:bg-mustard/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Submit Application
+        {isSubmitting ? "Submitting..." : "Submit Application"}
       </button>
 
       {submitted && (
