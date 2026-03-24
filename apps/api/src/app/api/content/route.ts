@@ -1,6 +1,5 @@
 // @version 0.5.0 - Echo: content submission API
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
 import { CreateContentSubmissionSchema } from "@feast-ai/shared";
 import { db } from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
@@ -39,8 +38,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     data: {
       eventId: parsed.data.eventId,
       submittedBy: user.id,
-      photos: parsed.data.photos ?? Prisma.JsonNull,
-      quotes: parsed.data.quotes ?? Prisma.JsonNull,
+      // ESCAPE: Prisma.JsonNull not available in Vercel build — use undefined for nullable Json
+      photos: parsed.data.photos ?? undefined,
+      quotes: parsed.data.quotes ?? undefined,
       audioUrl: parsed.data.audioUrl ?? null,
       status: "RECEIVED",
     },
