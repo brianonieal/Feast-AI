@@ -1,0 +1,60 @@
+/* @version 0.5.0 - Echo: Organic Serif design system */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-page: #F7F2EA;
+  --bg-surface: #F0EAE0;
+  --bg-card: #FDF9F2;
+  --bg-elevated: #FFFFFF;
+  --text: #1A1429;
+  --text-mid: #4A4468;
+  --text-hint: #9490B0;
+  --navy: #2D1B69;
+  --mustard: #C97B1A;
+  --teal: #1D9E75;
+  --coral: #E05535;
+  --border: #E5DDD0;
+  --border-strong: #CEC5B4;
+  --radius: 12px;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+}
+
+[data-theme="dark"] {
+  --bg-page: #1C1814;
+  --bg-surface: #241F19;
+  --bg-card: #2E2820;
+  --bg-elevated: #3A332A;
+  --text: #EDE8FF;
+  --text-mid: #A09ABE;
+  --text-hint: #6B6490;
+  --border: #3A3228;
+  --border-strong: #504840;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg-page);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 300;
+  color: var(--navy);
+}
+
+/* Dark mode heading color override */
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4 {
+  color: #EDE8FF;
+}

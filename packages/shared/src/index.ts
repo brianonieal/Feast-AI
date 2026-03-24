@@ -4,4 +4,7 @@
 export * from "./types";
 export * from "./schemas";
 export * from "./constants";
-export { colors, typography, spacing, radius, shadows, theme } from "./theme";
+export {
+  colors, typography, spacing, radius, shadows, theme,
+  FEAST_COLORS, FEAST_TYPOGRAPHY, FEAST_RADIUS, FEAST_SHADOW,
+} from "./theme";

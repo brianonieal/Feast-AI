@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm install:*)",
+      "Bash(pnpm approve-builds:*)",
+      "Bash(npx prisma:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm --filter @feast-ai/api add @clerk/nextjs)",
+      "Bash(pnpm --filter @feast-ai/mobile add @clerk/clerk-expo expo-secure-store)",
+      "Bash(pnpm --filter @feast-ai/api add svix)",
+      "Bash(pnpm --filter @feast-ai/api add twilio @anthropic-ai/sdk ai @ai-sdk/anthropic)",
+      "Bash(pnpm --filter @feast-ai/api add inngest)",
+      "Bash(pnpm --filter @feast-ai/api add @deepgram/sdk)",
+      "Bash(node -e \"const dg = require\\(''@deepgram/sdk''\\); console.log\\(Object.keys\\(dg\\).filter\\(k => k.toLowerCase\\(\\).includes\\(''client''\\)\\).join\\('', ''\\)\\)\")",
+      "Bash(node -e \"const dg = require\\(''@deepgram/sdk''\\); console.log\\(Object.keys\\(dg\\).slice\\(0,20\\).join\\('', ''\\)\\)\")",
+      "Bash(node -e \"const { DeepgramClient } = require\\(''''@deepgram/sdk''''\\); const c = new DeepgramClient\\({key:''''test''''}\\); console.log\\(Object.keys\\(c\\).join\\('''', ''''\\)\\); console.log\\(''''listen keys:'''', Object.getOwnPropertyNames\\(Object.getPrototypeOf\\(c.listen\\)\\).join\\('''', ''''\\)\\)\")",
+      "Bash(node -e \":*)",
+      "Bash(npx --package prisma@6 prisma validate --schema prisma/schema.prisma)",
+      "Bash(npx --package prisma@6 prisma generate --schema prisma/schema.prisma)",
+      "Bash(find D:/Feast-AI/apps/mobile -name *.ts -o -name *.tsx)",
+      "Bash(pnpm build:*)"
+    ]
+  }
+}

@@ -18,7 +18,7 @@ const UpdateEventSchema = z.object({
   capacity: z.number().int().positive().max(100).optional(),
   type: z.enum(["OPEN", "CLOSED"]).optional(),
   status: EventStatusSchema.optional(),
-  communityTier: z.enum(["PUBLIC", "REGIONAL", "FUNDERS", "COOPERATIVE"]).optional(),
+  communityTier: z.enum(["commons", "kitchen", "founding_table"]).optional(),
 });
 
 /** GET /api/events/:id — get single event */

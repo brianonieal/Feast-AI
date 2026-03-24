@@ -1,4 +1,5 @@
 // @version 0.1.0 - Foundation scaffold
+// @version pre-0.6.0 - CommunityTier enum alignment
 
 import { z } from "zod";
 
@@ -9,12 +10,14 @@ export const UserRoleSchema = z.enum([
   "ADMIN",
 ]);
 
-export const CommunityTierSchema = z.enum([
-  "PUBLIC",
-  "REGIONAL",
-  "FUNDERS",
-  "COOPERATIVE",
+export const UserTierSchema = z.enum([
+  "commons",
+  "kitchen",
+  "founding_table",
 ]);
+
+// Alias for backward compatibility
+export const CommunityTierSchema = UserTierSchema;
 
 export const UserSchema = z.object({
   id: z.string().cuid(),

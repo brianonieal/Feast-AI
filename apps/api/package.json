@@ -15,6 +15,7 @@
     "@ai-sdk/anthropic": "^3.0.63",
     "@anthropic-ai/sdk": "^0.80.0",
     "@clerk/nextjs": "^7.0.6",
+    "@deepgram/sdk": "^5.0.0",
     "@feast-ai/shared": "workspace:*",
     "@prisma/client": "^5.22.0",
     "ai": "^6.0.134",

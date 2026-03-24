@@ -49,7 +49,7 @@ export const CreateEventSchema = z.object({
   city: z.string().min(1).max(100),
   capacity: z.number().int().positive().max(100).default(12),
   type: EventTypeSchema.default("OPEN"),
-  communityTier: CommunityTierSchema.default("PUBLIC"),
+  communityTier: CommunityTierSchema.default("commons"),
 });
 
 export const EventAttendanceSchema = z.object({

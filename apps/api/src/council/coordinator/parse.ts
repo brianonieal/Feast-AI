@@ -14,7 +14,7 @@ export const ParsedEventSchema = z.object({
   city: z.string().min(1),
   capacity: z.number().int().positive(),
   type: z.enum(["OPEN", "CLOSED"]),
-  communityTier: z.enum(["PUBLIC", "REGIONAL", "FUNDERS", "COOPERATIVE"]),
+  communityTier: z.enum(["commons", "kitchen", "founding_table"]),
   missingFields: z.array(z.string()),
 });
 
@@ -26,7 +26,7 @@ Extract as many fields as possible. For any field you cannot determine from the 
 Defaults:
 - capacity: 12
 - type: "OPEN"
-- communityTier: "PUBLIC"
+- communityTier: "commons"
 - description: null
 
 Respond with ONLY a JSON object matching this schema:
@@ -38,7 +38,7 @@ Respond with ONLY a JSON object matching this schema:
   "city": "string (city name)",
   "capacity": number,
   "type": "OPEN" or "CLOSED",
-  "communityTier": "PUBLIC" or "REGIONAL" or "FUNDERS" or "COOPERATIVE",
+  "communityTier": "commons" or "kitchen" or "founding_table",
   "missingFields": ["list of fields that were not in the original message"]
 }`;
 

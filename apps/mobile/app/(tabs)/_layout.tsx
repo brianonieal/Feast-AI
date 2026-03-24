@@ -1,7 +1,9 @@
-// @version 0.1.0 - Foundation scaffold
+// @version 0.5.0 - Echo: 4-tab bottom navigator (PANTHEON layout)
+// Tabs: Home, Circle, Events, Library
+// Profile lives in the TopBar avatar, NOT as a 5th tab
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "@feast-ai/shared";
+import { FEAST_COLORS } from "@feast-ai/shared";
 
 type TabIconProps = {
   color: string;
@@ -13,18 +15,22 @@ export default function TabLayout(): React.JSX.Element {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary[500],
-        tabBarInactiveTintColor: colors.neutral[500],
+        tabBarActiveTintColor: FEAST_COLORS.mustard,
+        tabBarInactiveTintColor: FEAST_COLORS.inkLight,
         tabBarStyle: {
-          backgroundColor: colors.dark.background,
-          borderTopColor: colors.dark.border,
-          height: 80,
-          paddingBottom: 20,
+          backgroundColor: FEAST_COLORS.bgSurface,
+          borderTopColor: FEAST_COLORS.border,
+          borderTopWidth: 1,
+          height: 68,
+          paddingBottom: 12,
           paddingTop: 8,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 10,
+          fontWeight: "500",
+          letterSpacing: 0.3,
         },
+        tabBarShowLabel: true,
       }}
     >
       <Tabs.Screen
@@ -32,7 +38,7 @@ export default function TabLayout(): React.JSX.Element {
         options={{
           title: "Home",
           tabBarIcon: ({ color, size }: TabIconProps) => (
-            <Ionicons name="home-outline" size={size} color={color} />
+            <Ionicons name="restaurant-outline" size={size} color={color} />
           ),
         }}
       />
@@ -55,20 +61,11 @@ export default function TabLayout(): React.JSX.Element {
         }}
       />
       <Tabs.Screen
-        name="impact"
+        name="library"
         options={{
-          title: "Impact",
+          title: "Library",
           tabBarIcon: ({ color, size }: TabIconProps) => (
-            <Ionicons name="analytics-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          tabBarIcon: ({ color, size }: TabIconProps) => (
-            <Ionicons name="person-outline" size={size} color={color} />
+            <Ionicons name="book-outline" size={size} color={color} />
           ),
         }}
       />

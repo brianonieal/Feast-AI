@@ -6,6 +6,53 @@ Format: [Conventional Changelog](https://www.conventionalcommits.org/)
 
 ---
 
+## [pre-0.6.0] - CommunityTier enum alignment - 2026-03-23
+
+### Changed
+- **CommunityTier enum**: renamed values to align with proposal language
+  - PUBLIC → commons
+  - REGIONAL → kitchen
+  - FUNDERS → founding_table
+  - COOPERATIVE → founding_table
+- **packages/shared**: added UserTier type alias, kept CommunityTier for DB compatibility
+- **schema.prisma**: updated enum + default values on User and FeastEvent models
+
+---
+
+## [0.5.0] - Echo - 2026-03-23
+
+### Scope
+Post-dinner content transformation. @COMMUNICATOR agent, content submission pipeline, audio transcription, WordPress publishing.
+
+### Status: COMPLETE
+
+### Added
+- **Prisma models**: ContentSubmission (photos, quotes, audio, transcript), PublishedContent (multi-channel output with publish status), Reflection (post-dinner attendee reflections), plus ContentStatus, ContentChannel, PublishStatus enums
+- **@COMMUNICATOR agent**: System prompt with strict anti-hallucination constraints, content transformation pipeline (raw materials -> article + Instagram + Circle recap + newsletter via Claude)
+- **Deepgram adapter**: REST API transcription for pre-recorded audio (nova-2 model, smart formatting)
+- **WordPress adapter**: createPost (drafts for admin review), health check, Basic Auth
+- **Content API**: POST /api/content (submit raw materials, triggers Inngest pipeline), GET /api/content (list submissions)
+- **Inngest content-submitted pipeline**: 7-step background job — mark PROCESSING, transcribe audio (Deepgram), transform content (@COMMUNICATOR), save PublishedContent records, publish WordPress draft, post Circle recap, mark READY_FOR_REVIEW
+- **Integration status**: Updated to include Deepgram + WordPress health checks
+- **Shared types**: ContentSubmission, PublishedContent, Reflection, DinnerQuote, ContentPipelineInput/Output + Zod schemas
+
+### Dependencies Added
+- `@deepgram/sdk` — Audio transcription (REST API used directly)
+
+### Definition of Done
+- [x] `pnpm typecheck` passes with 0 errors (3/3 packages)
+- [x] `npx prisma validate` passes
+- [x] `pnpm lint` passes with 0 warnings
+- [x] @COMMUNICATOR transforms raw materials into 4 channel outputs
+- [x] Deepgram adapter transcribes audio via REST
+- [x] WordPress adapter creates draft posts
+- [x] Content pipeline: submit -> transcribe -> transform -> save -> publish
+- [x] Anti-hallucination: source-material-only constraint in system prompt
+- [ ] End-to-end test (requires Deepgram + WordPress + Circle API keys)
+- [ ] Git tagged as v0.5.0
+
+---
+
 ## [0.4.0] - Spark - 2026-03-23
 
 ### Scope

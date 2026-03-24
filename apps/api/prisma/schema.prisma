@@ -22,10 +22,9 @@ enum UserRole {
 }
 
 enum CommunityTier {
-  PUBLIC
-  REGIONAL
-  FUNDERS
-  COOPERATIVE
+  commons
+  kitchen
+  founding_table
 }
 
 enum EventType {
@@ -79,14 +78,16 @@ model User {
   phone         String?
   city          String?
   role          UserRole      @default(ATTENDEE)
-  communityTier CommunityTier @default(PUBLIC) @map("community_tier")
+  communityTier CommunityTier @default(commons) @map("community_tier")
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
   deletedAt     DateTime?     @map("deleted_at")
 
-  hostedEvents    FeastEvent[]       @relation("HostedEvents")
-  attendances     EventAttendance[]
-  inboundMessages InboundMessage[]
+  hostedEvents       FeastEvent[]        @relation("HostedEvents")
+  attendances        EventAttendance[]
+  inboundMessages    InboundMessage[]
+  reflections        Reflection[]
+  contentSubmissions ContentSubmission[]
 
   @@map("users")
 }
@@ -101,15 +102,18 @@ model FeastEvent {
   capacity      Int           @default(12)
   type          EventType     @default(OPEN)
   status        EventStatus   @default(DRAFT)
-  communityTier CommunityTier @default(PUBLIC) @map("community_tier")
+  communityTier CommunityTier @default(commons) @map("community_tier")
   circlePostId  String?       @map("circle_post_id")
   circleEventId String?       @map("circle_event_id")
   hostId        String        @map("host_id")
   host          User          @relation("HostedEvents", fields: [hostId], references: [id])
-  attendances   EventAttendance[]
-  createdAt     DateTime      @default(now()) @map("created_at")
-  updatedAt     DateTime      @updatedAt @map("updated_at")
-  deletedAt     DateTime?     @map("deleted_at")
+  attendances        EventAttendance[]
+  reflections        Reflection[]
+  contentSubmissions ContentSubmission[]
+  publishedContent   PublishedContent[]
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+  deletedAt          DateTime?     @map("deleted_at")
 
   @@map("feast_events")
 }
@@ -142,4 +146,87 @@ model InboundMessage {
   createdAt   DateTime       @default(now()) @map("created_at")
 
   @@map("inbound_messages")
+}
+
+// @version 0.5.0 - Echo: content pipeline enums
+enum ContentStatus {
+  RECEIVED
+  PROCESSING
+  READY_FOR_REVIEW
+  APPROVED
+  PUBLISHED
+  REJECTED
+}
+
+enum ContentChannel {
+  WEBSITE_ARTICLE
+  INSTAGRAM
+  CIRCLE_RECAP
+  NEWSLETTER
+  EMAIL_CAMPAIGN
+}
+
+enum PublishStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  PUBLISHED
+  FAILED
+}
+
+// @version 0.5.0 - Echo: content submission from hosts
+model ContentSubmission {
+  id          String        @id @default(cuid())
+  eventId     String        @map("event_id")
+  event       FeastEvent    @relation(fields: [eventId], references: [id])
+  submittedBy String        @map("submitted_by")
+  submitter   User          @relation(fields: [submittedBy], references: [id])
+  photos      Json?
+  quotes      Json?
+  audioUrl    String?       @map("audio_url")
+  transcript  String?
+  status      ContentStatus @default(RECEIVED)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  publishedContent PublishedContent[]
+
+  @@map("content_submissions")
+}
+
+// @version 0.5.0 - Echo: generated content for distribution
+model PublishedContent {
+  id           String         @id @default(cuid())
+  eventId      String         @map("event_id")
+  event        FeastEvent     @relation(fields: [eventId], references: [id])
+  submissionId String?        @map("submission_id")
+  submission   ContentSubmission? @relation(fields: [submissionId], references: [id])
+  channel      ContentChannel
+  title        String?
+  body         String
+  imageUrl     String?        @map("image_url")
+  metadata     Json?
+  status       PublishStatus  @default(DRAFT)
+  publishedAt  DateTime?      @map("published_at")
+  externalId   String?        @map("external_id")
+  externalUrl  String?        @map("external_url")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  @@map("published_content")
+}
+
+// @version 0.5.0 - Echo: post-dinner reflections
+model Reflection {
+  id        String     @id @default(cuid())
+  userId    String     @map("user_id")
+  user      User       @relation(fields: [userId], references: [id])
+  eventId   String     @map("event_id")
+  event     FeastEvent @relation(fields: [eventId], references: [id])
+  text      String
+  sentiment String?
+  themes    Json?
+  createdAt DateTime   @default(now()) @map("created_at")
+
+  @@map("reflections")
 }

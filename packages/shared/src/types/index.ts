@@ -2,10 +2,17 @@
 
 export type {
   UserRole,
+  UserTier,
   CommunityTier,
   User,
   UserPublic,
+  FeastUserRole,
+  FeastUser,
+  ClerkUserMetadata,
+  TierPermissions,
 } from "./user";
+
+export { getUserTier, getPermissions } from "./user";
 
 export type {
   EventType,
@@ -30,3 +37,34 @@ export type {
   InboundMessage,
   IntentClassification,
 } from "./message";
+
+// @version 0.5.0 - Echo: frontend event view model types
+export type {
+  EventVisibility,
+  FeastEventStatus,
+  FeastEventView,
+  RSVP,
+} from "./events";
+
+// @version 0.5.0 - Echo: Council AI types
+export type {
+  CouncilOutputType,
+  CouncilJobType,
+  CouncilJobStatus,
+  CouncilJobOutput,
+  CouncilJob,
+  DistributionTarget,
+} from "./ai";
+
+// @version 0.5.0 - Echo: content types
+export type {
+  ContentStatus,
+  ContentChannel,
+  PublishStatus,
+  DinnerQuote,
+  ContentSubmission,
+  PublishedContent,
+  Reflection,
+  ContentPipelineInput,
+  ContentPipelineOutput,
+} from "./content";

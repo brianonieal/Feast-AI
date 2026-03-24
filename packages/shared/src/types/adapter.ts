@@ -11,6 +11,8 @@ export interface AdapterHealthResult {
 export interface IntegrationStatus {
   circle: AdapterHealthResult;
   hubspot: AdapterHealthResult;
+  deepgram: AdapterHealthResult;
+  wordpress: AdapterHealthResult;
   timestamp: string;
 }
 
