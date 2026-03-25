@@ -6,6 +6,46 @@ Format: [Conventional Changelog](https://www.conventionalcommits.org/)
 
 ---
 
+## [1.0.0] - Feast - 2026-03-24
+
+**Scope**: Production MVP — deployment, Vercel hosting, production hardening
+**Status**: COMPLETE — LIVE at app.feastongood.com
+
+### Added
+- **README.md**: Full project documentation with architecture, setup, deployment guide
+- **Vercel deployment**: Two-project setup (feast-ai API + feast-ai-web frontend)
+- **Production API proxy**: `NEXT_PUBLIC_API_URL` env-based rewrite in next.config.ts
+- **Prisma generate**: Added to API build command for Vercel compatibility
+- **turbo.json**: 15 environment variables declared for Turbo build pipeline
+
+### Fixed
+- Clerk SSG compatibility: `ClerkClientProvider` wrapper, dynamic imports for auth components
+- Prisma enum imports: Replaced `z.nativeEnum(EventStatus)` with `z.enum()` string literals
+- Prisma `JsonNull`: Replaced with `db.$runCommandRaw` pattern for Vercel builds
+- Implicit `any` types: Added explicit typing on Prisma query results for strict mode
+- `getDistributionTargets()` signature: Updated all callers after v1.0.1 cleanup
+
+### Infrastructure
+- API: 20 serverless routes on Vercel (feast-ai-nine.vercel.app)
+- Web: 19 static pages on Vercel (feast-ai-web)
+- Database: Supabase PostgreSQL (all migrations applied)
+- Auth: Clerk (publishable + secret keys configured)
+- Email: Resend (transactional emails active)
+- Monitoring: Sentry (feast-ai-api + feast-ai-web projects)
+- Background jobs: Inngest (5 pipeline functions registered)
+- Rate limiting: Upstash Redis (5 tiers configured)
+
+### Definition of Done
+- [x] API deployed and returning 200 on /api/health
+- [x] Web app deployed and serving static pages
+- [x] Database in sync with Prisma schema
+- [x] All env vars configured in both Vercel projects
+- [x] Sentry receiving events from both projects
+- [x] README.md documents full setup and architecture
+- [x] Git tagged as v1.0.0
+
+---
+
 ## [1.0.1] - Integration cleanup - 2026-03-24
 
 ### Removed
