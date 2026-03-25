@@ -6,6 +6,58 @@ Format: [Conventional Changelog](https://www.conventionalcommits.org/)
 
 ---
 
+## [1.5.0] - Chorus - 2026-03-25
+
+**Scope**: Push notifications + weekly digest + 5 notification types
+**Status**: COMPLETE
+
+### Added
+- **Prisma models**: `PushToken` (device push token registry), `NotificationPreference` (per-user 5-toggle prefs)
+- **Notification service**: `apps/api/src/services/notifications.ts` — `sendPushNotification()`, `sendBulkNotification()`, `registerPushToken()`, `deactivatePushToken()`, `isNotificationEnabled()` with per-type preference check
+- **Inngest cron: event-reminder**: Hourly cron, 23-25hr window, sends to attendees of upcoming events
+- **Inngest cron: weekly-digest**: Sunday 10am UTC, sends community stats + upcoming events to all members with digest enabled
+- **Inngest updates**: `application-submitted` + `event-created` now send push notifications as final step (non-critical, silent .catch)
+- **Waitlist promotion notification**: `waitlist.ts` sends push on promotion (after DB update, never blocks promotion)
+- **API routes**: `POST/DELETE /api/notifications/token`, `GET/PATCH /api/notifications/preferences`
+- **Mobile hook**: `apps/mobile/hooks/usePushNotifications.ts` — registers Expo push token on app launch
+- **PushNotificationProvider**: Clerk-aware wrapper in `apps/mobile/hooks/PushNotificationProvider.tsx`, wired into root `_layout.tsx`
+- **expo-notifications + expo-device**: Installed in apps/mobile via `npx expo install`
+- **expo-server-sdk**: Installed in apps/api
+- **Circuit breaker on Expo**: `getBreaker('expo-push')` wraps all push sends
+
+### Notable decisions
+- expo-server-sdk chosen over OneSignal (simpler, no external dashboard, native Expo integration)
+- EXPO_ACCESS_TOKEN optional in dev (Expo client accepts undefined)
+- Preference check on every send adds latency — TODO: Redis cache in v1.6.0
+- PushNotificationProvider wrapper keeps Clerk `useAuth()` out of the hook for testability
+- Weekly digest cron is UTC (10am UTC = 6am ET) — TODO: timezone adjustment in v1.6.0
+- All notification sends are non-critical: waitlist promotion, application submit, event creation all use `.catch(() => {})`
+- Android notification channel set up before permission request
+- 9 total Inngest functions (7 event-triggered + 2 cron)
+
+### Definition of Done
+- [x] PushToken + NotificationPreference models in schema
+- [x] sendPushNotification() sends via Expo SDK
+- [x] sendBulkNotification() chunks + sends in parallel
+- [x] registerPushToken() validates Expo token format
+- [x] isNotificationEnabled() checks per-user preferences
+- [x] event-reminder cron: hourly, 23-25hr window
+- [x] weekly-digest cron: Sunday 10am UTC
+- [x] application-submitted sends welcome notification
+- [x] event-created notifies city members
+- [x] Waitlist promotion sends push
+- [x] POST/DELETE /api/notifications/token
+- [x] GET/PATCH /api/notifications/preferences
+- [x] Mobile hook registers token on launch
+- [x] PushNotificationProvider wired into _layout.tsx
+- [x] pnpm typecheck: 4/4 packages, 0 errors
+- [x] pnpm lint: 4/4 packages, 0 warnings
+- [x] next build (API): 36 routes, 0 errors
+- [x] next build (Web): 22 pages, 0 errors
+- [x] Git tagged v1.5.0 + pushed
+
+---
+
 ## [1.4.0] - Harvest - 2026-03-25
 
 **Scope**: Analytics + impact dashboard + funder report PDF + community health score

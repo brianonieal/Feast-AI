@@ -12,3 +12,6 @@ export { dailyCostReportFunction } from "./daily-cost-report";
 export { retryFailedJobsFunction } from "./retry-failed-jobs";
 // @version 1.2.0 - Prism: embed content for RAG
 export { embedContentFunction } from "./embed-content";
+// @version 1.5.0 - Chorus: push notification schedules
+export { eventReminderFunction } from "./event-reminder";
+export { weeklyDigestFunction } from "./weekly-digest";

@@ -94,6 +94,10 @@ model User {
   eventTemplates     EventTemplate[]
   waitlistEntries    EventWaitlist[]
   coHosting          CoHost[]
+  // @version 1.5.0 - Chorus: push notifications
+  pushTokens              PushToken[]
+  notificationPreference  NotificationPreference?
+  notificationLogs        NotificationLog[]
 
   @@map("users")
 }
@@ -491,4 +495,51 @@ model CoHost {
 
   @@unique([eventId, userId])
   @@map("co_hosts")
+}
+
+// @version 1.5.0 - Chorus: push notifications
+
+model PushToken {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  token     String   @unique          // Expo push token
+  platform  String   @default("ios")  // 'ios', 'android'
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("push_tokens")
+}
+
+model NotificationPreference {
+  id              String   @id @default(cuid())
+  userId          String   @unique @map("user_id")
+  user            User     @relation(fields: [userId], references: [id])
+  eventReminders  Boolean  @default(true) @map("event_reminders")
+  weeklyDigest    Boolean  @default(true) @map("weekly_digest")
+  newEventInCity  Boolean  @default(true) @map("new_event_in_city")
+  waitlistUpdates Boolean  @default(true) @map("waitlist_updates")
+  welcomeNotif    Boolean  @default(true) @map("welcome_notif")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("notification_preferences")
+}
+
+model NotificationLog {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id])
+  type        String                    // notification type key
+  title       String
+  body        String
+  data        Json?                     // extra payload
+  status      String   @default("sent") // 'sent', 'failed', 'skipped'
+  expoReceipt String?  @map("expo_receipt")
+  error       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+  @@map("notification_logs")
 }

@@ -1,6 +1,8 @@
 // @version 1.0.1 - Event creation pipeline (Circle posting removed)
+// @version 1.5.0 - Chorus: city member notifications
 import { inngest } from "@/lib/inngest";
 import { db } from "@/lib/db";
+import { sendBulkNotification } from "@/services/notifications";
 import { saveFailedJob } from "../services/deadLetter";
 
 /**
@@ -57,6 +59,43 @@ export const eventCreatedPipeline: ReturnType<typeof inngest.createFunction> = i
         data: { sourceType: "event", sourceId: eventId },
       }).catch(() => {});
       // Silent — embedding is non-critical to event creation
+    });
+
+    // Step 4: Notify city members about new event (v1.5.0 Chorus)
+    await step.run("notify-city-members", async () => {
+      // Fetch the event to get city + name
+      const event = await db.feastEvent.findUnique({
+        where: { id: eventId },
+        select: { name: true, city: true },
+      });
+      if (!event) return { notified: 0 };
+
+      // Find users in the same city who have push tokens
+      const cityUsers = await db.user.findMany({
+        where: {
+          pushTokens: { some: { isActive: true } },
+          memberIntents: {
+            some: {
+              city: { equals: event.city, mode: "insensitive" },
+            },
+          },
+        },
+        select: { id: true },
+      });
+
+      if (cityUsers.length === 0) return { notified: 0 };
+
+      await sendBulkNotification(
+        cityUsers.map((u) => u.id),
+        {
+          type: "new_event_in_city",
+          title: `New dinner in ${event.city} \uD83C\uDF7D`,
+          body: `"${event.name}" has been posted. Seats are limited.`,
+          data: { eventId, screen: "Events" },
+        }
+      );
+
+      return { notified: cityUsers.length };
     });
 
     return {

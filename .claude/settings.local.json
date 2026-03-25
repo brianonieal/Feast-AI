@@ -32,7 +32,10 @@
       "Bash(grep -rn onFailure D:/Feast-AI/apps/api/node_modules/inngest/ --include=*.d.ts)",
       "Bash(pnpm --filter api add voyageai)",
       "Bash(find D:/Feast-AI/apps/api/node_modules/voyageai -name *.d.ts -o -name *.d.mts)",
-      "Bash(pnpm --filter api add pdf-lib)"
+      "Bash(pnpm --filter api add pdf-lib)",
+      "Bash(pnpm --filter api add expo-server-sdk)",
+      "Bash(grep -n \"id:\" D:/Feast-AI/apps/api/src/inngest/*.ts)",
+      "Bash(npx expo:*)"
     ]
   }
 }

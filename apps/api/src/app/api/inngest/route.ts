@@ -9,6 +9,8 @@ import {
   dailyCostReportFunction,
   retryFailedJobsFunction,
   embedContentFunction,
+  eventReminderFunction,
+  weeklyDigestFunction,
 } from "@/inngest";
 
 export const { GET, POST, PUT } = serve({
@@ -21,5 +23,7 @@ export const { GET, POST, PUT } = serve({
     dailyCostReportFunction,
     retryFailedJobsFunction,
     embedContentFunction,
+    eventReminderFunction,
+    weeklyDigestFunction,
   ],
 });

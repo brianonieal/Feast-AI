@@ -1,7 +1,9 @@
 // @version 1.3.0 - Nexus
+// @version 1.5.0 - Chorus: push notification on waitlist promotion
 // Waitlist management — join, leave, promote
 
 import { db } from "../lib/db";
+import { sendPushNotification } from "./notifications";
 
 export async function joinWaitlist(eventId: string, userId: string) {
   // Check event exists
@@ -51,15 +53,30 @@ export async function promoteFromWaitlist(eventId: string, seats: number) {
     include: { user: { select: { email: true, name: true } } },
   });
 
+  // Fetch event name for notification message
+  const event = await db.feastEvent.findUnique({
+    where: { id: eventId },
+    select: { name: true },
+  });
+  const eventName = event?.name ?? "your upcoming dinner";
+
   for (const entry of topEntries) {
     await db.eventWaitlist.update({
       where: { id: entry.id },
       data: { notified: true, notifiedAt: new Date() },
     });
-    // TODO v1.4.0: Send email notification via Resend
+    // TODO v1.6.0: Send email notification via Resend
     console.log(
       `[Waitlist] Promoted ${entry.user.email} from waitlist for event ${eventId}`
     );
+    // Push notification — after DB update succeeds, non-critical
+    await sendPushNotification({
+      userId: entry.userId,
+      type: "waitlist_promotion",
+      title: "You're off the waitlist! \uD83C\uDF89",
+      body: `A spot opened up for "${eventName}". You're confirmed!`,
+      data: { eventId, screen: "EventDetail" },
+    }).catch(() => {}); // silent — promotion must succeed even if notification fails
   }
 
   return topEntries;

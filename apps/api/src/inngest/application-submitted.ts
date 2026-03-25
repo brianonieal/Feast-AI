@@ -5,6 +5,7 @@
 import { inngest } from "@/lib/inngest";
 import { db } from "@/lib/db";
 import { processOnboarding } from "@/services/onboarding";
+import { sendPushNotification } from "@/services/notifications";
 import { saveFailedJob } from "../services/deadLetter";
 
 // ESCAPE: Inngest v4 inferred type not portable without Fetch reference
@@ -71,6 +72,17 @@ export const applicationSubmittedPipeline: ReturnType<
           notes: `Classified as: ${result.classification.intent} (confidence: ${result.classification.confidence.toFixed(2)})`,
         },
       });
+    });
+
+    // Step 3: Send welcome push notification (v1.5.0 Chorus)
+    await step.run("send-welcome-notification", async () => {
+      await sendPushNotification({
+        userId,
+        type: "welcome",
+        title: "Welcome to The Feast \uD83C\uDF7D",
+        body: "Your application is received. We'll be in touch soon.",
+        data: { screen: "Home" },
+      }).catch(() => {}); // silent — notification is non-critical
     });
 
     return {
