@@ -8,3 +8,5 @@ export { contentApprovedPipeline } from "./content-approved";
 export { applicationSubmittedPipeline } from "./application-submitted";
 // @version 0.8.0 - Shield: daily cost report
 export { dailyCostReportFunction } from "./daily-cost-report";
+// @version 1.1.0 - Ember: auto-retry dead letter queue
+export { retryFailedJobsFunction } from "./retry-failed-jobs";

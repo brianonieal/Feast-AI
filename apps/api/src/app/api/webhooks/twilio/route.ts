@@ -1,7 +1,7 @@
 // @version 0.3.0 - Signal: Twilio SMS/WhatsApp webhook handler
 import { NextRequest, NextResponse } from "next/server";
 import { TwilioWebhookSchema } from "@feast-ai/shared";
-import type { MessageChannel } from "@feast-ai/shared";
+import type { MessageChannel, MessageIntent } from "@feast-ai/shared";
 import { db } from "@/lib/db";
 import { verifyTwilioWebhook, sendSms } from "@/lib/twilio";
 import { classifyIntent, generateSageResponse } from "@/council/sage";
@@ -45,10 +45,32 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     where: { phone: cleanPhone, deletedAt: null },
   });
 
-  // Classify intent
-  const intent = await classifyIntent(body, existingUser?.name ?? undefined);
+  // Classify intent + generate @SAGE response — graceful degradation on failure
+  let sageResponse =
+    "Thank you for reaching out to The Feast. We'll be in touch soon.";
+  let intent: { intent: MessageIntent; confidence: number; reasoning: string } = {
+    intent: "UNKNOWN" as MessageIntent,
+    confidence: 0,
+    reasoning: "@SAGE unavailable — graceful fallback",
+  };
 
-  // Log inbound message
+  try {
+    intent = await classifyIntent(body, existingUser?.name ?? undefined);
+    sageResponse = await generateSageResponse({
+      message: body,
+      intent,
+      senderPhone: cleanPhone,
+      senderName: existingUser?.name ?? undefined,
+    });
+  } catch (err) {
+    console.error(
+      "[Twilio webhook] @SAGE failed:",
+      err instanceof Error ? err.message : err
+    );
+    // Graceful degradation — default response used, intent logged as newsletter/0
+  }
+
+  // Log inbound message (always, even if @SAGE failed)
   const message = await db.inboundMessage.create({
     data: {
       from: cleanPhone,
@@ -58,14 +80,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       confidence: intent.confidence,
       userId: existingUser?.id ?? null,
     },
-  });
-
-  // Generate @SAGE response
-  const sageResponse = await generateSageResponse({
-    message: body,
-    intent,
-    senderPhone: cleanPhone,
-    senderName: existingUser?.name ?? undefined,
   });
 
   // Mark message as processed with response

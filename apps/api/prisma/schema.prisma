@@ -385,3 +385,24 @@ model DailySpendReport {
 
   @@map("daily_spend_reports")
 }
+
+// @version 1.1.0 - Ember: dead letter queue for exhausted Inngest jobs
+
+model FailedJob {
+  id            String    @id @default(cuid())
+  inngestJobId  String?   @map("inngest_job_id")
+  functionId    String    @map("function_id")
+  eventName     String    @map("event_name")
+  payload       Json
+  error         String
+  attempts      Int       @default(1)
+  exhausted     Boolean   @default(true)
+  resolvedAt    DateTime? @map("resolved_at")
+  resolvedBy    String?   @map("resolved_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([functionId, createdAt])
+  @@index([exhausted, createdAt])
+  @@map("failed_jobs")
+}

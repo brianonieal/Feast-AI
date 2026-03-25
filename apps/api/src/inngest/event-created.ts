@@ -1,6 +1,7 @@
 // @version 1.0.1 - Event creation pipeline (Circle posting removed)
 import { inngest } from "@/lib/inngest";
 import { db } from "@/lib/db";
+import { saveFailedJob } from "../services/deadLetter";
 
 /**
  * Event creation pipeline:
@@ -16,6 +17,16 @@ export const eventCreatedPipeline: ReturnType<typeof inngest.createFunction> = i
     name: "Event Created Pipeline",
     retries: 3,
     triggers: [{ event: "feast/event.created" }],
+    // ESCAPE: Inngest v4 onFailure type is any — explicit typing unavailable
+    onFailure: async (ctx: any) => {
+      await saveFailedJob({
+        functionId: "event-created-pipeline",
+        eventName: ctx.event?.name ?? "feast/event.created",
+        payload: (ctx.event?.data as Record<string, unknown>) ?? {},
+        error: ctx.error?.message ?? "Unknown error",
+        attempts: ctx.attempt ?? 3,
+      });
+    },
   },
   async ({ event, step }: { event: { data: { eventId: string } }; step: {
     run: <T>(name: string, fn: () => Promise<T>) => Promise<T>;

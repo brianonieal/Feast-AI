@@ -3,6 +3,7 @@
 // SYSTEM section only renders for founding_table tier
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -20,6 +21,7 @@ interface NavItem {
   label: string;
   href: string;
   icon: LucideIcon;
+  badge?: number;
 }
 
 const MANAGE_NAV: NavItem[] = [
@@ -37,6 +39,17 @@ export function AdminSidebar() {
   const pathname = usePathname();
   const user = useUserStore((s) => s.user);
   const isFoundingTable = user?.tier === "founding_table";
+
+  // Failed jobs badge — founding_table only, fire-and-forget
+  const [failedCount, setFailedCount] = useState(0);
+  useEffect(() => {
+    if (isFoundingTable) {
+      fetch("/api/admin/system/failed-jobs")
+        .then((r) => r.json())
+        .then((d: { count?: number }) => setFailedCount(d.count ?? 0))
+        .catch(() => {}); // silent fail — badge is non-critical
+    }
+  }, [isFoundingTable]);
 
   // Derive initials
   const initials = user?.name
@@ -63,7 +76,15 @@ export function AdminSidebar() {
 
       {/* SYSTEM section — founding_table only */}
       {isFoundingTable && (
-        <NavSection label="System" items={SYSTEM_NAV} pathname={pathname} />
+        <NavSection
+          label="System"
+          items={SYSTEM_NAV.map((item) =>
+            item.label === "Agents" && failedCount > 0
+              ? { ...item, badge: failedCount }
+              : item
+          )}
+          pathname={pathname}
+        />
       )}
 
       {/* Spacer */}
@@ -134,6 +155,11 @@ function NavSection({
           >
             <Icon size={16} />
             {item.label}
+            {item.badge != null && item.badge > 0 && (
+              <span className="ml-auto bg-coral text-white text-[9px] font-medium px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                {item.badge > 99 ? "99+" : item.badge}
+              </span>
+            )}
           </Link>
         );
       })}

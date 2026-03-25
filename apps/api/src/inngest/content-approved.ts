@@ -3,6 +3,7 @@
 // Runs distribution to all appropriate channels based on event visibility.
 import { inngest } from "@/lib/inngest";
 import { db } from "@/lib/db";
+import { saveFailedJob } from "../services/deadLetter";
 import { distributeContent } from "@/services/distribution";
 import { getDistributionTargets } from "@feast-ai/shared";
 // EventVisibility removed — getDistributionTargets() no longer takes args
@@ -14,6 +15,16 @@ export const contentApprovedPipeline: ReturnType<typeof inngest.createFunction> 
     name: "Content Approved — Distribute",
     retries: 3,
     triggers: [{ event: "content/approved" }],
+    // ESCAPE: Inngest v4 onFailure type is any
+    onFailure: async (ctx: any) => {
+      await saveFailedJob({
+        functionId: "content-approved-pipeline",
+        eventName: ctx.event?.name ?? "content/approved",
+        payload: (ctx.event?.data as Record<string, unknown>) ?? {},
+        error: ctx.error?.message ?? "Unknown error",
+        attempts: ctx.attempt ?? 3,
+      });
+    },
   },
   async ({ event, step }: { event: { data: { queueItemId: string; approvedBy: string } }; step: {
     run: <T>(name: string, fn: () => Promise<T>) => Promise<T>;

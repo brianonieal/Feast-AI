@@ -12,6 +12,7 @@ import {
   runDailyReport,
   restoreAgentModels,
 } from "@/council/guardian";
+import { saveFailedJob } from "../services/deadLetter";
 
 // ESCAPE: Inngest v4 inferred type not portable without Fetch reference
 export const dailyCostReportFunction: ReturnType<
@@ -22,6 +23,16 @@ export const dailyCostReportFunction: ReturnType<
     name: "Daily Cost Report — @GUARDIAN",
     retries: 1,
     triggers: [{ cron: "0 0 * * *" }],
+    // ESCAPE: Inngest v4 onFailure type is any
+    onFailure: async (ctx: any) => {
+      await saveFailedJob({
+        functionId: "daily-cost-report",
+        eventName: ctx.event?.name ?? "cron/daily-cost-report",
+        payload: (ctx.event?.data as Record<string, unknown>) ?? {},
+        error: ctx.error?.message ?? "Unknown error",
+        attempts: ctx.attempt ?? 1,
+      });
+    },
   },
   async ({ step }: { step: { run: <T>(name: string, fn: () => Promise<T>) => Promise<T> } }) => {
     // Step 1: Restore any model overrides from previous day

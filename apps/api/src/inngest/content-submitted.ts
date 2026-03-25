@@ -1,6 +1,7 @@
 // @version 1.0.1 - Content processing pipeline (Circle/WordPress removed)
 import { inngest } from "@/lib/inngest";
 import { db } from "@/lib/db";
+import { saveFailedJob } from "../services/deadLetter";
 import { deepgramAdapter } from "@/integrations/deepgram/adapter";
 import { transformDinnerContent } from "@/council/communicator";
 import type { ContentPipelineInput, DinnerQuote } from "@feast-ai/shared";
@@ -20,6 +21,16 @@ export const contentSubmittedPipeline: ReturnType<typeof inngest.createFunction>
     name: "Content Submitted Pipeline",
     retries: 2,
     triggers: [{ event: "feast/content.submitted" }],
+    // ESCAPE: Inngest v4 onFailure type is any
+    onFailure: async (ctx: any) => {
+      await saveFailedJob({
+        functionId: "content-submitted-pipeline",
+        eventName: ctx.event?.name ?? "feast/content.submitted",
+        payload: (ctx.event?.data as Record<string, unknown>) ?? {},
+        error: ctx.error?.message ?? "Unknown error",
+        attempts: ctx.attempt ?? 2,
+      });
+    },
   },
   async ({ event, step }: { event: { data: { submissionId: string } }; step: {
     run: <T>(name: string, fn: () => Promise<T>) => Promise<T>;

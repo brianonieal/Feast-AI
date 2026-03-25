@@ -5,6 +5,7 @@
 import { inngest } from "@/lib/inngest";
 import { db } from "@/lib/db";
 import { processOnboarding } from "@/services/onboarding";
+import { saveFailedJob } from "../services/deadLetter";
 
 // ESCAPE: Inngest v4 inferred type not portable without Fetch reference
 export const applicationSubmittedPipeline: ReturnType<
@@ -15,6 +16,16 @@ export const applicationSubmittedPipeline: ReturnType<
     name: "Application Submitted \u2014 Classify + Email",
     retries: 3,
     triggers: [{ event: "application/submitted" }],
+    // ESCAPE: Inngest v4 onFailure type is any
+    onFailure: async (ctx: any) => {
+      await saveFailedJob({
+        functionId: "application-submitted-pipeline",
+        eventName: ctx.event?.name ?? "application/submitted",
+        payload: (ctx.event?.data as Record<string, unknown>) ?? {},
+        error: ctx.error?.message ?? "Unknown error",
+        attempts: ctx.attempt ?? 3,
+      });
+    },
   },
   async ({
     event,

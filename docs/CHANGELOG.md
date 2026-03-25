@@ -6,6 +6,52 @@ Format: [Conventional Changelog](https://www.conventionalcommits.org/)
 
 ---
 
+## [1.1.0] - Ember - 2026-03-24
+
+**Scope**: Resilience — circuit breakers, retry logic, dead letter queue, graceful degradation
+**Status**: COMPLETE
+
+### Added
+- **CircuitBreaker class**: `packages/shared/src/lib/circuitBreaker.ts` — 3-state (CLOSED/OPEN/HALF_OPEN), generic `call<T>()` wrapper, singleton registry via `getBreaker()`
+- **FailedJob model**: Dead letter queue table in Prisma — `failed_jobs` with 12 fields, 2 indexes
+- **Dead letter service**: `apps/api/src/services/deadLetter.ts` — `saveFailedJob()` (never throws), `resolveFailedJob()`, `getFailedJobs()`, `getFailedJobCount()`
+- **retry-failed-jobs Inngest function**: Cron every 15 minutes, retries up to 10 jobs from the last 24 hours, marks resolved as `auto-retry`
+- **GET/POST /api/admin/system/failed-jobs**: View dead letter queue + resolve/retry jobs manually (founding_table only)
+- **Admin sidebar badge**: Coral count badge on "Agents" nav item when failed jobs exist
+
+### Changed
+- **Resend adapter**: `resend.emails.send()` wrapped with circuit breaker (threshold: 3, recovery: 60s). Stub path bypasses breaker.
+- **Twilio webhook**: `classifyIntent()` + `generateSageResponse()` wrapped in try/catch with warm fallback message. Signature verification stays unprotected (403 on bad signature is correct).
+- **All 5 Inngest functions**: Added `onFailure` → `saveFailedJob()` handler for dead letter queue on exhaustion
+- **POST /api/onboarding/classify**: Wrapped `processOnboarding()` with graceful degradation — returns `{ intent: 'newsletter', degraded: true }` on failure
+
+### Notable decisions
+- CircuitBreaker registry uses module-level Map (serverless cold-start caveat documented)
+- `onFailure` uses `any` ESCAPE annotation (Inngest v4 type limitation)
+- Manual job resolution in admin dashboard also triggers immediate retry via `inngest.send()`
+- `contentSubmittedPipeline` retries kept at 2 (pre-existing value, not overridden)
+
+### Definition of Done
+- [x] pnpm typecheck: 4/4 packages, 0 errors
+- [x] pnpm lint: 4/4 packages, 0 warnings
+- [x] npx prisma validate: passes
+- [x] next build (API + Web): 0 errors
+- [x] FailedJob model in DB (npx prisma db push)
+- [x] CircuitBreaker class exported from packages/shared
+- [x] getBreaker() registry prevents duplicate breakers
+- [x] Resend adapter wrapped with circuit breaker
+- [x] Twilio webhook graceful on @SAGE failure
+- [x] All 5 Inngest functions have onFailure → saveFailedJob
+- [x] retry-failed-jobs function registered (6 total)
+- [x] GET /api/admin/system/failed-jobs returns jobs + count
+- [x] POST /api/admin/system/failed-jobs resolves a job
+- [x] /api/onboarding/classify returns degraded response on failure
+- [x] AdminSidebar shows coral badge when failed jobs > 0
+- [x] CHANGELOG.md updated
+- [x] Git tagged v1.1.0 + pushed
+
+---
+
 ## [1.0.0] - Feast - 2026-03-24
 
 **Scope**: Production MVP — deployment, Vercel hosting, production hardening

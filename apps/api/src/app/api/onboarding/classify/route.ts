@@ -34,19 +34,32 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const result = await processOnboarding({
-    email: parsed.data.email,
-    name: parsed.data.name,
-    city: parsed.data.city,
-    message: parsed.data.message,
-    source: parsed.data.source ?? "web",
-  });
+  try {
+    const result = await processOnboarding({
+      email: parsed.data.email,
+      name: parsed.data.name,
+      city: parsed.data.city,
+      message: parsed.data.message,
+      source: parsed.data.source ?? "web",
+    });
 
-  return NextResponse.json({
-    success: true,
-    intent: result.classification.intent,
-    confidence: result.classification.confidence,
-    nextStep: result.classification.suggestedPath.nextStep,
-    emailSent: result.emailSent,
-  });
+    return NextResponse.json({
+      success: true,
+      intent: result.classification.intent,
+      confidence: result.classification.confidence,
+      nextStep: result.classification.suggestedPath.nextStep,
+      emailSent: result.emailSent,
+    });
+  } catch (err) {
+    // Classification failed — return graceful degraded response
+    console.error("[/api/onboarding/classify] Failed:", err);
+    return NextResponse.json({
+      success: true,
+      intent: "newsletter",
+      confidence: 0,
+      nextStep: "Stay connected via newsletter",
+      emailSent: false,
+      degraded: true,
+    });
+  }
 }

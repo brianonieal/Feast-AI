@@ -4,6 +4,7 @@
 
 import { Resend } from "resend";
 import type { EmailTemplate } from "@feast-ai/shared";
+import { getBreaker } from "@feast-ai/shared";
 
 const FROM_EMAIL = process.env.FEAST_FROM_EMAIL ?? "hello@feastongood.com";
 const FROM_NAME = "The Feast";
@@ -90,13 +91,21 @@ export async function sendWelcomeEmail(
     return { success: false, error: `Unknown template: ${params.template}` };
   }
 
+  // Real call — wrap with circuit breaker
+  const breaker = getBreaker("resend", {
+    failureThreshold: 3,
+    recoveryTimeout: 60_000,
+  });
+
   try {
-    const result = await resend.emails.send({
-      from: `${FROM_NAME} <${FROM_EMAIL}>`,
-      to: params.to,
-      subject: content.subject,
-      html: content.html(params.variables),
-    });
+    const result = await breaker.call(() =>
+      resend.emails.send({
+        from: `${FROM_NAME} <${FROM_EMAIL}>`,
+        to: params.to,
+        subject: content.subject,
+        html: content.html(params.variables),
+      })
+    );
 
     if (result.error) {
       console.error(
@@ -109,10 +118,8 @@ export async function sendWelcomeEmail(
     return { success: true, id: result.data?.id };
   } catch (err) {
     const error = err instanceof Error ? err.message : String(err);
-    console.error(
-      `[Resend] Failed to send ${params.template} to ${params.to}:`,
-      error
-    );
+    // Circuit open or send failed — log and return graceful failure
+    console.error(`[Resend] ${error}`);
     return { success: false, error };
   }
 }
