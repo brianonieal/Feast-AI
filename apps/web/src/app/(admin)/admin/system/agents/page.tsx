@@ -1,4 +1,5 @@
 // @version 0.9.0 - Lens: admin agent status + spend page
+// @version 1.3.0 - Nexus: added Growth Strategy section
 // founding_table only — client-side guard
 "use client";
 
@@ -63,6 +64,18 @@ export default function AdminAgentsPage() {
   const [summary, setSummary] = useState<DailySpendSummary | null>(null);
   const [recentLogs, setRecentLogs] = useState<SpendLog[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
+  const [strategy, setStrategy] = useState<{
+    topOpportunities: Array<{
+      city: string;
+      currentInterest: number;
+      recommendedAction: string;
+      suggestedCadence: string;
+      priorityScore: number;
+    }>;
+    globalInsights: string[];
+    nextActions: string[];
+  } | null>(null);
+  const [strategyLoading, setStrategyLoading] = useState(false);
 
   // founding_table guard
   useEffect(() => {
@@ -259,6 +272,87 @@ export default function AdminAgentsPage() {
           rows={logRows}
           emptyMessage="No recent activity"
         />
+      </div>
+
+      {/* ─── Growth Strategy (v1.3.0 Nexus) ─── */}
+      <div className="border-t border-border pt-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="font-sans text-[10px] font-medium tracking-[0.09em] uppercase text-mustard mb-1">
+              Regional Strategy
+            </p>
+            <h2 className="font-display italic font-light text-xl text-navy">
+              Growth Recommendations
+            </h2>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="font-sans text-[10px] text-ink-light">
+              Uses Claude Opus — cached 10 min
+            </span>
+            <button
+              type="button"
+              onClick={async () => {
+                setStrategyLoading(true);
+                try {
+                  const res = await fetch("/api/strategist/growth");
+                  const data = await res.json();
+                  if (data.strategy) setStrategy(data.strategy);
+                } catch {
+                  // silent
+                } finally {
+                  setStrategyLoading(false);
+                }
+              }}
+              disabled={strategyLoading}
+              className="font-sans text-xs font-medium text-white bg-mustard rounded-full px-4 py-2 hover:bg-mustard/90 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            >
+              {strategyLoading ? "Consulting @STRATEGIST..." : "Generate Strategy"}
+            </button>
+          </div>
+        </div>
+
+        {strategyLoading && (
+          <p className="font-display italic text-ink-light text-center py-8 animate-pulse">
+            Consulting @STRATEGIST...
+          </p>
+        )}
+
+        {strategy && !strategyLoading && (
+          <div className="space-y-3">
+            {strategy.topOpportunities.map((opp, i) => {
+              const scoreColor =
+                opp.priorityScore >= 8
+                  ? "bg-teal-soft text-teal"
+                  : opp.priorityScore >= 5
+                    ? "bg-mustard-soft text-mustard"
+                    : "bg-coral-soft text-coral";
+
+              return (
+                <div
+                  key={`opp-${i}`}
+                  className="bg-card border border-border rounded-lg p-4 border-l-[3px] border-l-teal"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-display italic text-[15px] text-navy">
+                      {opp.city}
+                    </span>
+                    <span
+                      className={`font-sans text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${scoreColor}`}
+                    >
+                      {opp.priorityScore}/10
+                    </span>
+                  </div>
+                  <p className="font-sans text-sm text-ink">
+                    {opp.recommendedAction}
+                  </p>
+                  <p className="font-sans text-xs text-ink-light mt-1 capitalize">
+                    Suggested: {opp.suggestedCadence}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

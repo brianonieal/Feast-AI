@@ -46,6 +46,16 @@ export type {
   RSVP,
 } from "./events";
 
+// @version 1.3.0 - Nexus: recurring templates, waitlist, co-hosts
+export type {
+  EventCadence,
+  CoHostRole,
+  CoHostStatus,
+  EventTemplateData,
+  WaitlistEntry,
+  CoHostInvite,
+} from "./events";
+
 // @version 0.5.0 - Echo: Council AI types
 export type {
   CouncilOutputType,

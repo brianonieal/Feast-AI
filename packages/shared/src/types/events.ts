@@ -34,3 +34,39 @@ export interface RSVP {
   status: "confirmed" | "waitlisted" | "cancelled";
   createdAt: Date;
 }
+
+// @version 1.3.0 - Nexus: recurring templates, waitlist, co-hosts
+
+export type EventCadence = "weekly" | "biweekly" | "monthly" | "custom";
+export type CoHostRole = "co_host" | "facilitator" | "assistant";
+export type CoHostStatus = "pending" | "accepted" | "declined";
+
+export interface EventTemplateData {
+  id: string;
+  name: string;
+  description?: string;
+  city: string;
+  maxSeats: number;
+  communityTier: string;
+  cadence: EventCadence;
+  isActive: boolean;
+  usageCount: number;
+  createdAt: Date;
+}
+
+export interface WaitlistEntry {
+  id: string;
+  eventId: string;
+  userId: string;
+  position: number;
+  notified: boolean;
+  createdAt: Date;
+}
+
+export interface CoHostInvite {
+  eventId: string;
+  userId: string;
+  role: CoHostRole;
+  status: CoHostStatus;
+  invitedBy: string;
+}

@@ -6,6 +6,55 @@ Format: [Conventional Changelog](https://www.conventionalcommits.org/)
 
 ---
 
+## [1.3.0] - Nexus - 2026-03-25
+
+**Scope**: Advanced events — recurring templates, multi-host, waitlist, @STRATEGIST
+**Status**: COMPLETE
+
+### Added
+- **Prisma models**: `EventTemplate`, `EventWaitlist`, `CoHost` + reverse relations on FeastEvent + User
+- **Shared types**: `EventCadence`, `CoHostRole`, `CoHostStatus`, `EventTemplateData`, `WaitlistEntry`, `CoHostInvite`
+- **@STRATEGIST agent**: `apps/api/src/council/strategist/index.ts` — `generateGrowthStrategy()` using Claude Opus + RAG, with empty-data early return
+- **Event template service**: `createTemplate()`, `getTemplatesByUser()`, `spawnEventFromTemplate()` — spawns event + triggers pipeline + auto-embed
+- **Waitlist service**: `joinWaitlist()`, `leaveWaitlist()`, `promoteFromWaitlist()`, `getWaitlistPosition()`, `getWaitlistForEvent()`
+- **GET + POST /api/events/templates** — list + create templates
+- **POST /api/events/templates/[id]/spawn** — create event from template (ownership check, future date validation)
+- **POST + DELETE + GET /api/events/[id]/waitlist** — join, leave, check position (duplicate + attendance guards)
+- **POST /api/events/[id]/cohosts** — invite co-host (primary host only, re-invite on declined)
+- **PATCH /api/events/[id]/cohosts/[userId]** — accept/decline (invited user only)
+- **DELETE /api/events/[id]/cohosts/[userId]** — remove co-host (primary host only, cannot remove self)
+- **GET /api/strategist/growth** — founding_table only, ai rate limit, 10-min cache
+- **RAG loop**: event-created pipeline auto-embeds events via `content/embed` Inngest event
+- **Admin events page**: Templates tab (lazy fetch, inline date picker + spawn)
+- **Admin agents page**: Growth Strategy section (Generate button, opportunity cards with priority badges)
+
+### Notable decisions
+- Re-invite on declined co-host updates existing record (no duplicate constraint violation)
+- Claude Opus for @STRATEGIST — justified for high-stakes strategic planning, cached 10 min
+- RAG loop closed for events via 3 entry points: Inngest pipeline, spawnFromTemplate, manual embed
+- `confirmedSeats` tracked via EventAttendance relation, not denormalized field (schema reconciliation from blueprint)
+- Admin templates tab uses lazy fetch — no API call until tab selected
+- `capacity` and `date` field names used (blueprint assumed `maxSeats` and `scheduledAt`)
+
+### Definition of Done
+- [x] pnpm typecheck: 4/4 packages, 0 errors
+- [x] pnpm lint: 4/4 packages, 0 warnings
+- [x] npx prisma validate: passes
+- [x] next build (API): 29 routes, 0 errors
+- [x] next build (Web): 20 pages, 0 errors
+- [x] EventTemplate, EventWaitlist, CoHost models in DB
+- [x] Template CRUD + spawn from template
+- [x] Waitlist join/leave/promote
+- [x] @STRATEGIST generateGrowthStrategy()
+- [x] Co-host invite/accept/decline/remove with permission checks
+- [x] event-created pipeline auto-embeds
+- [x] Admin events Templates tab
+- [x] Admin agents Growth Strategy section
+- [x] CHANGELOG.md updated
+- [x] Git tagged v1.3.0 + pushed
+
+---
+
 ## [1.2.0] - Prism - 2026-03-24
 
 **Scope**: RAG + pgvector + @ANALYST agent + semantic search

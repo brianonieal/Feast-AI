@@ -1,4 +1,5 @@
 // @version 0.9.0 - Lens: admin events management page
+// @version 1.3.0 - Nexus: added Templates tab
 // Data-heavy: stats row, filter strip, data table
 // Client-side data fetching via useEffect + useState
 "use client";
@@ -37,11 +38,26 @@ const STATUS_OPTIONS: EventStatus[] = [
   "CANCELLED",
 ];
 
+interface AdminTemplate {
+  id: string;
+  name: string;
+  city: string;
+  maxSeats: number;
+  cadence: string;
+  isActive: boolean;
+  usageCount: number;
+  createdAt: string;
+}
+
 export default function AdminEventsPage() {
+  const [activeTab, setActiveTab] = useState<"events" | "templates">("events");
   const [events, setEvents] = useState<AdminEvent[]>([]);
+  const [templates, setTemplates] = useState<AdminTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [templatesLoading, setTemplatesLoading] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
   const [selectedCity, setSelectedCity] = useState<string>("All");
+  const [spawnDates, setSpawnDates] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetch("/api/admin/events?limit=50")
@@ -52,6 +68,43 @@ export default function AdminEventsPage() {
       })
       .catch(() => setIsLoading(false));
   }, []);
+
+  // Fetch templates when tab is switched
+  useEffect(() => {
+    if (activeTab !== "templates" || templates.length > 0) return;
+    setTemplatesLoading(true);
+    // TODO v1.4.0: admin view of all templates
+    fetch("/api/events/templates")
+      .then((r) => r.json())
+      .then((d: { data: AdminTemplate[] }) => {
+        setTemplates(d.data ?? []);
+        setTemplatesLoading(false);
+      })
+      .catch(() => setTemplatesLoading(false));
+  }, [activeTab, templates.length]);
+
+  const handleSpawn = async (templateId: string) => {
+    const date = spawnDates[templateId];
+    if (!date) return;
+    try {
+      const res = await fetch(`/api/events/templates/${templateId}/spawn`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scheduledAt: new Date(date).toISOString() }),
+      });
+      if (res.ok) {
+        // Refresh events + increment template usage locally
+        setTemplates((prev) =>
+          prev.map((t) =>
+            t.id === templateId ? { ...t, usageCount: t.usageCount + 1 } : t
+          )
+        );
+        setSpawnDates((prev) => ({ ...prev, [templateId]: "" }));
+      }
+    } catch {
+      // silent
+    }
+  };
 
   // Derive stats client-side from the events array
   const stats = useMemo(() => {
@@ -142,6 +195,25 @@ export default function AdminEventsPage() {
         </button>
       </div>
 
+      {/* Tab strip */}
+      <div className="flex gap-1">
+        {(["events", "templates"] as const).map((tab) => (
+          <button
+            key={tab}
+            type="button"
+            onClick={() => setActiveTab(tab)}
+            className={`px-4 py-2 rounded-full text-sm font-sans capitalize transition-colors ${
+              activeTab === tab
+                ? "bg-mustard text-white"
+                : "bg-[var(--bg-surface)] text-ink-mid hover:bg-border"
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === "events" && (<>
       {/* Stats row */}
       <div className="grid grid-cols-4 gap-3">
         <AdminStatCard label="Total Events" value={stats.total} color="navy" />
@@ -208,6 +280,61 @@ export default function AdminEventsPage() {
         isLoading={isLoading}
         emptyMessage="No events found"
       />
+      </>)}
+
+      {activeTab === "templates" && (<>
+      {/* Template stats */}
+      <div className="grid grid-cols-3 gap-3">
+        <AdminStatCard label="Total Templates" value={templates.length} color="navy" />
+        <AdminStatCard
+          label="Active"
+          value={templates.filter((t) => t.isActive).length}
+          color="teal"
+        />
+        <AdminStatCard
+          label="Total Spawned"
+          value={templates.reduce((s, t) => s + t.usageCount, 0)}
+          color="mustard"
+        />
+      </div>
+
+      {/* Templates table */}
+      <AdminDataTable
+        headers={["Name", "City", "Cadence", "Seats", "Used", "Actions"]}
+        rows={templates.map((t) => [
+          <span key="name" className="font-display italic text-[15px] text-navy">
+            {t.name}
+          </span>,
+          <span key="city" className="font-sans text-xs text-ink-mid">{t.city}</span>,
+          <span key="cadence" className="font-sans text-xs text-ink-mid capitalize">
+            {t.cadence}
+          </span>,
+          <span key="seats" className="font-sans text-xs text-ink-mid">{t.maxSeats}</span>,
+          <span key="used" className="font-sans text-xs text-ink-mid">{t.usageCount}</span>,
+          <span key="action" className="flex items-center gap-2">
+            <input
+              type="date"
+              min={new Date().toISOString().split("T")[0]}
+              value={spawnDates[t.id] ?? ""}
+              onChange={(e) =>
+                setSpawnDates((prev) => ({ ...prev, [t.id]: e.target.value }))
+              }
+              className="font-sans text-xs border border-border rounded px-2 py-1 bg-card text-ink"
+            />
+            <button
+              type="button"
+              onClick={() => handleSpawn(t.id)}
+              disabled={!spawnDates[t.id]}
+              className="font-sans text-xs font-medium text-white bg-mustard rounded-full px-3 py-1 hover:bg-mustard/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              Spawn
+            </button>
+          </span>,
+        ])}
+        isLoading={templatesLoading}
+        emptyMessage="No templates yet"
+      />
+      </>)}
     </div>
   );
 }

@@ -50,6 +50,15 @@ export const eventCreatedPipeline: ReturnType<typeof inngest.createFunction> = i
       });
     });
 
+    // Step 3: Auto-embed event into RAG corpus (v1.3.0 Nexus)
+    await step.run("auto-embed-event", async () => {
+      await inngest.send({
+        name: "content/embed",
+        data: { sourceType: "event", sourceId: eventId },
+      }).catch(() => {});
+      // Silent — embedding is non-critical to event creation
+    });
+
     return {
       eventId,
       status: "MARKETED",
