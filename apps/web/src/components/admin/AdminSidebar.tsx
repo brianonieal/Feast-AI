@@ -11,6 +11,7 @@ import {
   CheckSquare,
   Users,
   Sparkles,
+  BarChart3,
   Cpu,
   Plug,
   ChevronLeft,
@@ -30,6 +31,7 @@ const MANAGE_NAV: NavItem[] = [
   { label: "Content Queue", href: "/admin/queue", icon: CheckSquare },
   { label: "Members", href: "/admin/members", icon: Users },
   { label: "Insights", href: "/admin/insights", icon: Sparkles },
+  { label: "Impact", href: "/admin/impact", icon: BarChart3 },
 ];
 
 const SYSTEM_NAV: NavItem[] = [

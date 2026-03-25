@@ -6,6 +6,56 @@ Format: [Conventional Changelog](https://www.conventionalcommits.org/)
 
 ---
 
+## [1.4.0] - Harvest - 2026-03-25
+
+**Scope**: Analytics + impact dashboard + funder report PDF + community health score
+**Status**: COMPLETE
+
+### Added
+- **Analytics service**: `apps/api/src/services/analytics.ts` — `getImpactMetrics()` (9 parallel DB queries), `getMemberReflectionHistory()`, `getCampaignData()` (city breakdown via groupBy), `calculateHealthScore()` (5-dimension weighted 0-100)
+- **PDF generation**: `apps/api/src/services/funderReport.ts` — `generateFunderReportPDF()` using pdf-lib (pure TypeScript, Vercel-compatible). Branded report: title, impact table, 100 Dinners progress bar, health score, monthly stats, footer
+- **GET /api/analytics/impact** — aggregated metrics, any auth, 5-min cache
+- **GET /api/analytics/campaign** — 100 Dinners tracker with city breakdown, any auth, 5-min cache
+- **GET /api/analytics/reflections/me** — personal reflection history, no cache
+- **GET /api/analytics/funder-report** — JSON report for dashboard, founding_table only, 10-min cache
+- **POST /api/analytics/funder-report/export** — PDF binary download, founding_table only, distribution rate limit
+- **/admin/impact page**: Health score hero card (72px navy), 6 impact stat cards, 100 Dinners progress bar (40px teal/cream), monthly growth cards, PDF download button (founding_table only, blob URL pattern)
+- **/profile/journey page**: Member reflection timeline (left-border-teal cards), stats row (reflections/member since/streak), warm empty state with link to /events
+- **AdminSidebar**: "Impact" nav item (BarChart3 icon) after Insights
+- **pdf-lib package**: Installed in apps/api
+
+### Notable decisions
+- pdf-lib used instead of Python/reportlab — Vercel serverless has no Python runtime
+- getCampaignData() added beyond blueprint scope — city breakdown via Prisma groupBy
+- Health score: 5-dimension weighted algorithm (dinner activity, reflection engagement, host network, attendance quality, growth momentum)
+- PDF download uses blob URL pattern with proper cleanup (createObjectURL → click → revokeObjectURL)
+- No schema changes — all data aggregated from existing tables
+- select + include Prisma conflict fixed — used include-only pattern for attendance queries
+
+### Definition of Done
+- [x] pnpm typecheck: 4/4 packages, 0 errors
+- [x] pnpm lint: 4/4 packages, 0 warnings
+- [x] npx prisma validate: passes
+- [x] next build (API): 34 routes, 0 errors
+- [x] next build (Web): 22 pages, 0 errors
+- [x] getImpactMetrics() returns valid ImpactMetrics
+- [x] calculateHealthScore() returns 0-100 number
+- [x] getMemberReflectionHistory() returns history for user
+- [x] generateFunderReportPDF() returns valid PDF Buffer
+- [x] GET /api/analytics/impact returns metrics
+- [x] GET /api/analytics/campaign returns campaign data
+- [x] GET /api/analytics/reflections/me returns member history
+- [x] GET /api/analytics/funder-report returns JSON report
+- [x] POST /api/analytics/funder-report/export returns PDF binary
+- [x] /admin/impact page renders health score + all stats
+- [x] /admin/impact PDF download works (founding_table only)
+- [x] /profile/journey page renders reflection timeline
+- [x] AdminSidebar has Impact nav item
+- [x] CHANGELOG.md updated
+- [x] Git tagged v1.4.0 + pushed
+
+---
+
 ## [1.3.0] - Nexus - 2026-03-25
 
 **Scope**: Advanced events — recurring templates, multi-host, waitlist, @STRATEGIST
