@@ -1,6 +1,7 @@
-// @version 0.5.0 - Echo: 4-tab bottom navigator (PANTHEON layout)
-// Tabs: Home, Circle, Events, Library
-// Profile lives in the TopBar avatar, NOT as a 5th tab
+// @version 0.5.0 - Echo: bottom navigator (PANTHEON layout)
+// @version 2.0.0 - Pantheon: 5th tab — Impact
+// Tabs: Home, Circle, Events, Library, Impact
+// Profile lives in the TopBar avatar, NOT as a tab
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { FEAST_COLORS } from "@feast-ai/shared";
@@ -66,6 +67,15 @@ export default function TabLayout(): React.JSX.Element {
           title: "Library",
           tabBarIcon: ({ color, size }: TabIconProps) => (
             <Ionicons name="book-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="impact"
+        options={{
+          title: "Impact",
+          tabBarIcon: ({ color, size }: TabIconProps) => (
+            <Ionicons name="sparkles-outline" size={size} color={color} />
           ),
         }}
       />

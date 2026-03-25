@@ -14,6 +14,7 @@ import {
   BarChart3,
   Cpu,
   Plug,
+  Scale,
   ChevronLeft,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -37,6 +38,7 @@ const MANAGE_NAV: NavItem[] = [
 const SYSTEM_NAV: NavItem[] = [
   { label: "Agents", href: "/admin/system/agents", icon: Cpu },
   { label: "Integrations", href: "/admin/system/integrations", icon: Plug },
+  { label: "Governance", href: "/admin/governance", icon: Scale },
 ];
 
 export function AdminSidebar() {

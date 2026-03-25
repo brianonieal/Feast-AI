@@ -6,6 +6,63 @@ Format: [Conventional Changelog](https://www.conventionalcommits.org/)
 
 ---
 
+## [2.0.0] - Pantheon - 2026-03-25
+
+**Scope**: Voice interface + autonomous agents + Impact tab + governance + white-label
+**Status**: COMPLETE
+
+### Added
+- **Prisma models**: `ConfidenceLog` (SMS classification tracking), `WhiteLabelOrg` (partner branding config), `GovernanceProposal` + `GovernanceVote` (Founding Table voting with quorum)
+- **Confidence gate**: `apps/api/src/lib/confidenceGate.ts` — thresholds: >=0.8 auto-draft, 0.5-0.79 review, <0.5 escalate. Logging never throws.
+- **Autonomous SMS**: Twilio webhook applies confidence gate on CREATE_EVENT intent. High confidence → event-auto-draft Inngest pipeline. Low confidence → clarification prompt. All other intents unchanged.
+- **event-auto-draft Inngest function**: Parses SMS via Claude → creates DRAFT FeastEvent → sends push notification for one-tap confirm. 10th Inngest function.
+- **Voice transcription route**: `POST /api/voice/transcribe` — accepts audio (m4a/webm), transcribes via Deepgram nova-2. Stubs gracefully without API key.
+- **Web VoiceTextArea**: `apps/web/src/components/ui/VoiceTextArea.tsx` — Web Speech API primary (live transcript), MediaRecorder → Deepgram fallback. Inline mic, teal border recording, editable text. Wired into ApplicationForm motivation fields + governance proposal body.
+- **Mobile voice hook**: `apps/mobile/hooks/useVoiceInput.ts` — expo-av recording → upload → /api/voice/transcribe. Component: `apps/mobile/components/VoiceTextArea.tsx` (available for future forms).
+- **Mobile Impact tab**: 5th tab (sparkles-outline icon). Personal/Community toggle pill. Personal: reflections timeline + stats. Community: health score hero + 2x2 stats + 100 Dinners progress bar.
+- **Web /impact page**: Member-facing at `/impact`. Health score hero, personal contribution pills, stats grid, 100 Dinners campaign, "Share the Mission" copy button.
+- **Governance API**: `GET/POST /api/governance/proposals` + `POST /api/governance/proposals/[id]/vote`. Founding_table only. One vote per user per proposal. Quorum tracking + status transitions.
+- **Admin governance page**: `/admin/governance`. Inline proposal form with VoiceTextArea, proposal cards with status-colored left borders, vote buttons, quorum progress bars. Optimistic vote updates.
+- **White-label config**: `GET/POST /api/admin/white-label`. Org slug, name, primaryColor, logoUrl, domain. Foundation for v2.2.0 theming.
+- **AdminSidebar**: Governance (Scale icon) under SYSTEM section
+- **expo-av**: Installed in apps/mobile for audio recording
+
+### Notable decisions
+- Semi-autonomous SMS: >0.8 confidence = auto-draft + push notification to confirm, NOT fully autonomous. Human always has final say via one-tap.
+- Web Speech API primary for web voice (Chrome/Safari), MediaRecorder → Deepgram fallback for Firefox/other
+- Mobile voice always record → upload → transcribe (no Web Speech API in React Native)
+- baseValueRef pattern in VoiceTextArea prevents React re-render issues with live transcript appending
+- VoiceTextArea component available on mobile but not wired to specific screen yet (no long-form text input exists in current mobile tabs)
+- Impact tab is 5th tab: Home / Circle / Events / Library / Impact
+- White-label is config storage foundation only (full CSS theming in v2.2.0)
+- Confidence gate only activates for CREATE_EVENT intent — all other intents unaffected
+- getNextSaturday() defaults SMS events to next Saturday 7pm when date not specified
+
+### Definition of Done
+- [x] pnpm typecheck: 4/4 packages, 0 errors
+- [x] pnpm lint: 4/4 packages, 0 warnings
+- [x] npx prisma validate: passes
+- [x] next build (API): 40 routes, 0 errors
+- [x] next build (Web): 24 pages, 0 errors
+- [x] ConfidenceLog model in DB
+- [x] GovernanceProposal + GovernanceVote models in DB
+- [x] WhiteLabelOrg model in DB
+- [x] Confidence gate: >0.8 auto-draft, <0.5 escalate
+- [x] event-auto-draft Inngest function (10 total)
+- [x] Push notification sent on auto-draft
+- [x] POST /api/voice/transcribe returns transcript
+- [x] Web VoiceTextArea with inline mic + live text
+- [x] Mobile useVoiceInput hook works with expo-av
+- [x] Mobile VoiceTextArea component
+- [x] Mobile Impact tab (5th tab, personal + community sections)
+- [x] Web /impact member-facing page
+- [x] Governance proposals API (create + list + vote)
+- [x] /admin/governance page
+- [x] White-label config route
+- [x] Git tagged v2.0.0 + pushed
+
+---
+
 ## [1.5.0] - Chorus - 2026-03-25
 
 **Scope**: Push notifications + weekly digest + 5 notification types

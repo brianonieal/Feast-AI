@@ -15,3 +15,5 @@ export { embedContentFunction } from "./embed-content";
 // @version 1.5.0 - Chorus: push notification schedules
 export { eventReminderFunction } from "./event-reminder";
 export { weeklyDigestFunction } from "./weekly-digest";
+// @version 2.0.0 - Pantheon: autonomous SMS event drafting
+export { eventAutoDraftFunction } from "./event-auto-draft";

@@ -1,10 +1,17 @@
 // @version 0.3.0 - Signal: Twilio SMS/WhatsApp webhook handler
+// @version 2.0.0 - Pantheon: confidence gate for autonomous SMS
 import { NextRequest, NextResponse } from "next/server";
 import { TwilioWebhookSchema } from "@feast-ai/shared";
 import type { MessageChannel, MessageIntent } from "@feast-ai/shared";
 import { db } from "@/lib/db";
 import { verifyTwilioWebhook, sendSms } from "@/lib/twilio";
 import { classifyIntent, generateSageResponse } from "@/council/sage";
+import {
+  getConfidenceAction,
+  logConfidenceDecision,
+  sendAutoDraftConfirmation,
+} from "@/lib/confidenceGate";
+import { inngest } from "@/lib/inngest";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   // Parse form-encoded body from Twilio
@@ -68,6 +75,80 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       err instanceof Error ? err.message : err
     );
     // Graceful degradation — default response used, intent logged as newsletter/0
+  }
+
+  // @version 2.0.0 - Pantheon: confidence gate (CREATE_EVENT only)
+  if (intent.intent === "CREATE_EVENT" && existingUser) {
+    const action = getConfidenceAction(intent.confidence);
+
+    await logConfidenceDecision({
+      intent: intent.intent,
+      confidence: intent.confidence,
+      action,
+    });
+
+    if (action === "auto_draft") {
+      // High confidence — auto-draft the event via Inngest
+      await inngest
+        .send({
+          name: "event/auto-draft",
+          data: {
+            userId: existingUser.id,
+            message: body,
+            confidence: intent.confidence,
+          },
+        })
+        .catch(() => {});
+
+      await sendAutoDraftConfirmation({
+        userId: existingUser.id,
+        eventId: "pending",
+        eventName: "your dinner",
+        confidence: intent.confidence,
+      });
+
+      // Log inbound + return early
+      await db.inboundMessage.create({
+        data: {
+          from: cleanPhone,
+          body,
+          channel,
+          intent: intent.intent,
+          confidence: intent.confidence,
+          userId: existingUser.id,
+        },
+      });
+
+      const twiml =
+        '<?xml version="1.0" encoding="UTF-8"?><Response><Message>Got it! I\'ve drafted your event. Check your phone to review and publish with one tap. 🍽</Message></Response>';
+      return new NextResponse(twiml, {
+        status: 200,
+        headers: { "Content-Type": "text/xml" },
+      });
+    }
+
+    if (action === "escalated") {
+      // Low confidence — ask for clarification
+      await db.inboundMessage.create({
+        data: {
+          from: cleanPhone,
+          body,
+          channel,
+          intent: intent.intent,
+          confidence: intent.confidence,
+          userId: existingUser.id,
+        },
+      });
+
+      const twiml =
+        '<?xml version="1.0" encoding="UTF-8"?><Response><Message>I want to make sure I understand. Could you tell me a bit more about what you\'re planning? For example: "Host a dinner next Saturday in Brooklyn for 10 people."</Message></Response>';
+      return new NextResponse(twiml, {
+        status: 200,
+        headers: { "Content-Type": "text/xml" },
+      });
+    }
+
+    // Medium confidence (sent_to_review) — falls through to existing flow
   }
 
   // Log inbound message (always, even if @SAGE failed)

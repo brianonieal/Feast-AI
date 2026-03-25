@@ -1,11 +1,13 @@
 // @version 0.5.0 - Echo: Application form for host/facilitator role
 // @version 0.7.0 - Compass: wired to POST /api/applications
+// @version 2.0.0 - Pantheon: voice-assisted textarea on motivation fields
 // Matches mockup Row 2 Col 1 — single-page form, no multi-step wizard
 "use client";
 
 import { useState } from "react";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
+import { VoiceTextArea } from "@/components/ui/VoiceTextArea";
 
 type RoleOption = "host" | "facilitator";
 
@@ -146,29 +148,21 @@ export function ApplicationForm() {
           />
         </div>
 
-        <div>
-          <label className="font-sans text-xs font-medium text-ink-mid mb-1 block">
-            Are you a community organizer?
-          </label>
-          <Textarea
-            rows={3}
-            placeholder="Tell us about your community experience..."
-            value={organizer}
-            onChange={(e) => setOrganizer(e.target.value)}
-          />
-        </div>
+        <VoiceTextArea
+          label="Are you a community organizer?"
+          rows={3}
+          placeholder="Tell us about your community experience..."
+          value={organizer}
+          onChange={setOrganizer}
+        />
 
-        <div>
-          <label className="font-sans text-xs font-medium text-ink-mid mb-1 block">
-            What draws you to this role?
-          </label>
-          <Textarea
-            rows={4}
-            placeholder="What draws you to hosting or facilitating?"
-            value={draws}
-            onChange={(e) => setDraws(e.target.value)}
-          />
-        </div>
+        <VoiceTextArea
+          label="What draws you to this role?"
+          rows={4}
+          placeholder="What draws you to hosting or facilitating?"
+          value={draws}
+          onChange={setDraws}
+        />
       </div>
 
       {/* ─── PART C: Submit ─── */}

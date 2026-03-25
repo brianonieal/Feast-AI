@@ -11,6 +11,7 @@ import {
   embedContentFunction,
   eventReminderFunction,
   weeklyDigestFunction,
+  eventAutoDraftFunction,
 } from "@/inngest";
 
 export const { GET, POST, PUT } = serve({
@@ -25,5 +26,6 @@ export const { GET, POST, PUT } = serve({
     embedContentFunction,
     eventReminderFunction,
     weeklyDigestFunction,
+    eventAutoDraftFunction,
   ],
 });
