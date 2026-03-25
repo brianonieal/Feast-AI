@@ -1,8 +1,10 @@
-// @version 1.0.1 - Onboarding orchestration (HubSpot stub removed)
-// Runs the full flow: classify → save intent → update regional interest → send email
+// @version 1.2.0 - Prism: RAG context + auto-embed on classification
+// Runs the full flow: classify → RAG lookup → save intent → embed → regional interest → send email
 
 import { db } from "../lib/db";
+import { inngest } from "../lib/inngest";
 import { classifyMemberIntent } from "../council/sage/classifyOnboarding";
+import { findSimilarIntents } from "../council/analyst";
 import { sendWelcomeEmail } from "../integrations/resend/adapter";
 import type { ClassificationResult } from "@feast-ai/shared";
 
@@ -33,6 +35,16 @@ export async function processOnboarding(
     context: source,
   });
 
+  // Step 1.5: RAG context (light touch — logged, not yet influencing classification)
+  // Full RAG integration into the classification prompt is v1.3.0 Nexus
+  const similarIntents = await findSimilarIntents(message).catch(() => []);
+  if (similarIntents.length > 0) {
+    console.log(
+      `[@SAGE RAG] ${similarIntents.length} similar past intent(s) found ` +
+        `for classification: ${classification.intent}`
+    );
+  }
+
   // Step 2: Save MemberIntent to DB
   const memberIntent = await db.memberIntent.create({
     data: {
@@ -47,6 +59,18 @@ export async function processOnboarding(
       source,
     },
   });
+
+  // Step 2.5: Embed the intent for future RAG searches
+  // Closes the loop: new intent → classified → saved → embedded
+  await inngest
+    .send({
+      name: "content/embed",
+      data: {
+        sourceType: "member_intent",
+        sourceId: memberIntent.id,
+      },
+    })
+    .catch(() => {}); // silent — embedding is non-critical
 
   // Step 3: Update regional interest count
   if (city) {

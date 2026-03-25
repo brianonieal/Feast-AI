@@ -10,3 +10,5 @@ export { applicationSubmittedPipeline } from "./application-submitted";
 export { dailyCostReportFunction } from "./daily-cost-report";
 // @version 1.1.0 - Ember: auto-retry dead letter queue
 export { retryFailedJobsFunction } from "./retry-failed-jobs";
+// @version 1.2.0 - Prism: embed content for RAG
+export { embedContentFunction } from "./embed-content";

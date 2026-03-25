@@ -8,6 +8,7 @@ import {
   applicationSubmittedPipeline,
   dailyCostReportFunction,
   retryFailedJobsFunction,
+  embedContentFunction,
 } from "@/inngest";
 
 export const { GET, POST, PUT } = serve({
@@ -19,5 +20,6 @@ export const { GET, POST, PUT } = serve({
     applicationSubmittedPipeline,
     dailyCostReportFunction,
     retryFailedJobsFunction,
+    embedContentFunction,
   ],
 });

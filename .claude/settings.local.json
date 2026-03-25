@@ -29,7 +29,9 @@
       "Bash(pnpm --filter web add @sentry/nextjs)",
       "Bash(pnpm --filter api build)",
       "Bash(grep -rn \"onFailure\\\\|onFail\" node_modules/inngest/ --include=*.ts)",
-      "Bash(grep -rn onFailure D:/Feast-AI/apps/api/node_modules/inngest/ --include=*.d.ts)"
+      "Bash(grep -rn onFailure D:/Feast-AI/apps/api/node_modules/inngest/ --include=*.d.ts)",
+      "Bash(pnpm --filter api add voyageai)",
+      "Bash(find D:/Feast-AI/apps/api/node_modules/voyageai -name *.d.ts -o -name *.d.mts)"
     ]
   }
 }

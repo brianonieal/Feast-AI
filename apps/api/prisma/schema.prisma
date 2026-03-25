@@ -406,3 +406,24 @@ model FailedJob {
   @@index([exhausted, createdAt])
   @@map("failed_jobs")
 }
+
+// @version 1.2.0 - Prism: embeddings for RAG + semantic search
+// NOTE: The vector column (embedding vector(1536)) is added via raw SQL
+// because Prisma does not natively support the pgvector type.
+// See PRISM_BLUEPRINT_v1.2.0.md Section 2.2 for the ALTER TABLE SQL.
+
+model Embedding {
+  id          String   @id @default(cuid())
+  sourceType  String   @map("source_type")
+  // Valid values: 'reflection', 'article', 'event', 'member_intent'
+  sourceId    String   @map("source_id")
+  content     String   // the text that was embedded (for reference)
+  model       String   @default("voyage-3") // embedding model used
+  dimensions  Int      @default(1536)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([sourceType, sourceId]) // one embedding per source record
+  @@index([sourceType])
+  @@map("embeddings")
+}

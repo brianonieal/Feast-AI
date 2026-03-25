@@ -10,6 +10,7 @@ import {
   CalendarDays,
   CheckSquare,
   Users,
+  Sparkles,
   Cpu,
   Plug,
   ChevronLeft,
@@ -28,6 +29,7 @@ const MANAGE_NAV: NavItem[] = [
   { label: "Events", href: "/admin/events", icon: CalendarDays },
   { label: "Content Queue", href: "/admin/queue", icon: CheckSquare },
   { label: "Members", href: "/admin/members", icon: Users },
+  { label: "Insights", href: "/admin/insights", icon: Sparkles },
 ];
 
 const SYSTEM_NAV: NavItem[] = [

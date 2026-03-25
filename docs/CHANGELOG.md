@@ -6,6 +6,54 @@ Format: [Conventional Changelog](https://www.conventionalcommits.org/)
 
 ---
 
+## [1.2.0] - Prism - 2026-03-24
+
+**Scope**: RAG + pgvector + @ANALYST agent + semantic search
+**Status**: COMPLETE
+
+### Added
+- **Embedding model**: Prisma `Embedding` table + pgvector `vector(1536)` column via raw SQL + IVFFlat cosine similarity index
+- **Voyage AI embeddings**: `apps/api/src/lib/embeddings.ts` — `generateEmbedding()`, `storeEmbedding()`, `semanticSearch()` using voyage-3 model, 1536 dimensions
+- **embed-content Inngest function**: Triggered by `content/embed` event, handles 4 source types (reflection, article, event, member_intent), registered as 7th function
+- **@ANALYST agent**: `apps/api/src/council/analyst/index.ts` — `generateHealthReport()` (5 RAG queries + 1 Claude call), `findSimilarIntents()` (never throws)
+- **GET /api/search**: Semantic search across all embedded content, `ai` rate limit tier
+- **GET /api/analyst/health**: Community health report, 5-min cache, any authenticated user
+- **/admin/insights page**: Stats, top themes (navy pills), sentiment (teal card), regional strengths (bar chart), recommendations (mustard cards), "Regenerate Report" with loading state
+- **AdminSidebar**: "Insights" nav item (Sparkles icon) under MANAGE section
+- **@SAGE RAG enhancement**: `findSimilarIntents()` called after classification (logged, not yet influencing output — v1.3.0)
+- **Auto-embedding**: New MemberIntents automatically embedded via Inngest on creation
+- **VOYAGE_API_KEY**: Added to `.env.example` and `turbo.json`
+- **voyageai package**: Installed in apps/api
+
+### Notable decisions
+- Voyage AI for embeddings (Anthropic SDK has no embeddings endpoint as of March 2026)
+- vector column managed via raw SQL (Prisma does not support pgvector natively)
+- IVFFlat index with lists=100 (appropriate for <1M vectors)
+- RAG context logged but not used in classification output (full integration in v1.3.0 Nexus)
+- Auto-embedding closes the RAG loop: classify → save → embed → available for future searches
+- Health report cached 5 min at API layer to avoid repeated Voyage AI + Claude costs (~$0.002/report)
+
+### Definition of Done
+- [x] pgvector extension enabled in Supabase
+- [x] Embedding model in Prisma schema
+- [x] vector column + IVFFlat index added via SQL
+- [x] generateEmbedding() returns float array (stubs with zeros when no key)
+- [x] storeEmbedding() saves to DB + vector column
+- [x] semanticSearch() returns ranked results by similarity
+- [x] embed-content Inngest function registered (7 total)
+- [x] @ANALYST generateHealthReport() returns valid report
+- [x] GET /api/search returns semantic results
+- [x] GET /api/analyst/health returns community report
+- [x] /admin/insights page renders health report
+- [x] AdminSidebar has Insights nav item
+- [x] @SAGE logs RAG context from similar intents
+- [x] pnpm typecheck: 4/4 packages, 0 errors
+- [x] pnpm lint: 4/4 packages, 0 warnings
+- [x] next build (API + Web): 0 errors
+- [x] Git tagged v1.2.0 + pushed
+
+---
+
 ## [1.1.0] - Ember - 2026-03-24
 
 **Scope**: Resilience — circuit breakers, retry logic, dead letter queue, graceful degradation
