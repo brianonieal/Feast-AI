@@ -1,26 +1,38 @@
-// @version 0.5.0 - Echo: Integration health check endpoint (all adapters)
+// @version 1.0.1 - Integration health check (active integrations only)
 import { NextResponse } from "next/server";
-import type { IntegrationStatus } from "@feast-ai/shared";
-import { circleAdapter } from "@/integrations/circle/adapter";
-import { hubspotAdapter } from "@/integrations/hubspot/adapter";
-import { deepgramAdapter } from "@/integrations/deepgram/adapter";
-import { wordpressAdapter } from "@/integrations/wordpress/adapter";
+import { db } from "@/lib/db";
 
 export async function GET(): Promise<NextResponse> {
-  const [circle, hubspot, deepgram, wordpress] = await Promise.all([
-    circleAdapter.healthCheck(),
-    hubspotAdapter.healthCheck(),
-    deepgramAdapter.healthCheck(),
-    wordpressAdapter.healthCheck(),
-  ]);
+  const checks: { service: string; connected: boolean; latencyMs: number; error?: string }[] = [];
 
-  const status: IntegrationStatus = {
-    circle,
-    hubspot,
-    deepgram,
-    wordpress,
+  // Resend
+  checks.push({
+    service: "resend",
+    connected: !!process.env.RESEND_API_KEY,
+    latencyMs: 0,
+  });
+
+  // Supabase DB ping
+  const dbStart = Date.now();
+  try {
+    await db.$queryRaw`SELECT 1`;
+    checks.push({
+      service: "supabase",
+      connected: true,
+      latencyMs: Date.now() - dbStart,
+    });
+  } catch (e) {
+    checks.push({
+      service: "supabase",
+      connected: false,
+      latencyMs: Date.now() - dbStart,
+      error: e instanceof Error ? e.message : "DB ping failed",
+    });
+  }
+
+  return NextResponse.json({
+    success: true,
+    integrations: checks,
     timestamp: new Date().toISOString(),
-  };
-
-  return NextResponse.json(status);
+  });
 }

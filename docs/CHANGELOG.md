@@ -6,6 +6,24 @@ Format: [Conventional Changelog](https://www.conventionalcommits.org/)
 
 ---
 
+## [1.0.1] - Integration cleanup - 2026-03-24
+
+### Removed
+- Circle.so adapter (apps/api/src/integrations/circle/)
+- HubSpot adapter (apps/api/src/integrations/hubspot/)
+- WordPress adapter (apps/api/src/integrations/wordpress/)
+- Circle/HubSpot/WordPress distribution channels
+- HubSpot contact sync stub from onboarding service
+- HubSpot fields (hubspotTags, hubspotPipeline) from OnboardingPath type
+- Unused env vars from .env.example
+
+### Kept
+- Twilio webhook handler (inbound SMS still active)
+- Instagram adapter (deferred, code retained for future use)
+- All other integrations unchanged
+
+---
+
 ## [0.9.0] - Lens - 2026-03-24
 
 **Scope**: Admin dashboard — event management, content queue, members, agent status, integrations

@@ -9,7 +9,7 @@ import { requireAuth } from "@/lib/auth";
 import { applyRateLimit } from "@/lib/rateLimit";
 import { distributeContent } from "@/services/distribution";
 import { getDistributionTargets } from "@feast-ai/shared";
-import type { EventVisibility } from "@feast-ai/shared";
+// EventVisibility removed — getDistributionTargets() no longer takes args
 
 const DistributeSchema = z.object({
   queueItemId: z.string(),
@@ -58,10 +58,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // CommunityTier enum values match EventVisibility after migration
-  const targets = getDistributionTargets(
-    item.event.communityTier as EventVisibility
-  );
+  const targets = getDistributionTargets();
 
   const results = await distributeContent({
     approvalQueueId: item.id,

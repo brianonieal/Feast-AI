@@ -1,34 +1,19 @@
-// @version 0.6.0 - Beacon: distribution routing types
+// @version 1.0.1 - Distribution types (channels cleared, Instagram retained as type)
 
-import type { EventVisibility } from "./events";
-
-export type DistributionChannel =
-  | "hubspot_email"
-  | "circle_public"
-  | "circle_tier"
-  | "crm_regional";
+export type DistributionChannel = "instagram";
 
 export interface DistributionTarget {
   channel: DistributionChannel;
-  targetId?: string; // circle space ID, hubspot list ID, etc.
+  targetId?: string;
   metadata?: Record<string, unknown>;
 }
 
 /**
- * Route content to the correct distribution channels based on event visibility.
- * From workflow PDF:
- *   Open (public) event  → instagram + mailing_list + circle_public
- *   Closed event         → circle_tier + crm_regional
+ * Distribution routing stub — returns empty array.
+ * Channels will be activated when integrations are configured.
  */
-export function getDistributionTargets(
-  eventVisibility: EventVisibility
-): DistributionTarget[] {
-  if (eventVisibility === "public") {
-    // instagram deferred to v0.7.x (requires Meta app review + per-user OAuth)
-    return [{ channel: "hubspot_email" }, { channel: "circle_public" }];
-  }
-  // commons, kitchen, founding_table → closed distribution
-  return [{ channel: "circle_tier" }, { channel: "crm_regional" }];
+export function getDistributionTargets(): DistributionTarget[] {
+  return [];
 }
 
 export interface DistributionResult {

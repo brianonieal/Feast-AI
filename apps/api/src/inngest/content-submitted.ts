@@ -1,9 +1,7 @@
-// @version 0.5.0 - Echo: content processing pipeline
+// @version 1.0.1 - Content processing pipeline (Circle/WordPress removed)
 import { inngest } from "@/lib/inngest";
 import { db } from "@/lib/db";
 import { deepgramAdapter } from "@/integrations/deepgram/adapter";
-import { wordpressAdapter } from "@/integrations/wordpress/adapter";
-import { circleAdapter } from "@/integrations/circle/adapter";
 import { transformDinnerContent } from "@/council/communicator";
 import type { ContentPipelineInput, DinnerQuote } from "@feast-ai/shared";
 
@@ -13,9 +11,7 @@ import type { ContentPipelineInput, DinnerQuote } from "@feast-ai/shared";
  * 2. Transcribe audio if present (Deepgram)
  * 3. Transform content via @COMMUNICATOR (Claude)
  * 4. Save generated content as PublishedContent records (DRAFT status)
- * 5. Publish article draft to WordPress
- * 6. Post recap to Circle
- * 7. Mark submission as READY_FOR_REVIEW
+ * 5. Mark submission as READY_FOR_REVIEW
  */
 // ESCAPE: Inngest v4 inferred type not portable without Fetch reference — explicit any avoids build error
 export const contentSubmittedPipeline: ReturnType<typeof inngest.createFunction> = inngest.createFunction(
@@ -143,52 +139,7 @@ export const contentSubmittedPipeline: ReturnType<typeof inngest.createFunction>
       return Promise.all(records);
     });
 
-    // Step 5: Publish article draft to WordPress (if generated)
-    if (content.article) {
-      await step.run("publish-to-wordpress", async () => {
-        try {
-          const post = await wordpressAdapter.createPost({
-            title: content.article!.title,
-            content: content.article!.body,
-            status: "draft",
-          });
-          // Update the article record with external ID
-          const articleRecord = savedContent.find((r) => r.channel === "WEBSITE_ARTICLE");
-          if (articleRecord) {
-            await db.publishedContent.update({
-              where: { id: articleRecord.id },
-              data: { externalId: String(post.id), externalUrl: post.link },
-            });
-          }
-          return post;
-        } catch (err: unknown) {
-          console.error("WordPress publish failed:", err instanceof Error ? err.message : err);
-          return null;
-        }
-      });
-    }
-
-    // Step 6: Post recap to Circle (if generated)
-    if (content.circleRecap) {
-      await step.run("post-to-circle", async () => {
-        try {
-          const spaces = await circleAdapter.listSpaces();
-          const targetSpace = spaces[0];
-          if (!targetSpace) return null;
-
-          return circleAdapter.createPost({
-            spaceId: targetSpace.id,
-            name: `Recap: ${submission.event.name}`,
-            body: content.circleRecap!.body,
-          });
-        } catch (err: unknown) {
-          console.error("Circle recap post failed:", err instanceof Error ? err.message : err);
-          return null;
-        }
-      });
-    }
-
-    // Step 7: Mark submission as READY_FOR_REVIEW
+    // Step 5: Mark submission as READY_FOR_REVIEW
     await step.run("mark-ready", async () => {
       return db.contentSubmission.update({
         where: { id: submissionId },

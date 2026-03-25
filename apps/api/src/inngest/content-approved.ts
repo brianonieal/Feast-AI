@@ -5,7 +5,7 @@ import { inngest } from "@/lib/inngest";
 import { db } from "@/lib/db";
 import { distributeContent } from "@/services/distribution";
 import { getDistributionTargets } from "@feast-ai/shared";
-import type { EventVisibility } from "@feast-ai/shared";
+// EventVisibility removed — getDistributionTargets() no longer takes args
 
 // ESCAPE: Inngest v4 inferred type not portable without Fetch reference
 export const contentApprovedPipeline: ReturnType<typeof inngest.createFunction> = inngest.createFunction(
@@ -31,9 +31,7 @@ export const contentApprovedPipeline: ReturnType<typeof inngest.createFunction> 
     if (!queueItem) throw new Error(`Queue item ${queueItemId} not found`);
 
     // Step 2: Determine distribution targets from event visibility
-    const targets = getDistributionTargets(
-      queueItem.event.communityTier as EventVisibility
-    );
+    const targets = getDistributionTargets();
 
     // Step 3: Distribute to all channels (sequential, with per-channel logging)
     const results = await step.run("distribute-content", async () => {

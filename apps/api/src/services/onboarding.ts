@@ -1,5 +1,5 @@
-// @version 0.7.0 - Compass: onboarding orchestration service
-// Runs the full flow: classify → save intent → update regional interest → stub HubSpot → send email
+// @version 1.0.1 - Onboarding orchestration (HubSpot stub removed)
+// Runs the full flow: classify → save intent → update regional interest → send email
 
 import { db } from "../lib/db";
 import { classifyMemberIntent } from "../council/sage/classifyOnboarding";
@@ -11,15 +11,14 @@ interface OnboardingInput {
   email: string;
   name: string;
   city?: string;
-  message: string; // what they told us / form data combined
-  source?: string; // 'web', 'sms', 'apply_form'
+  message: string;
+  source?: string;
 }
 
 interface OnboardingResult {
   classification: ClassificationResult;
   memberIntentId: string;
   emailSent: boolean;
-  hubspotSynced: boolean; // always false in v0.7.0 — stubbed
 }
 
 export async function processOnboarding(
@@ -59,26 +58,14 @@ export async function processOnboarding(
     });
   }
 
-  // Step 4: HubSpot contact sync — STUBBED for v0.7.0
-  // TODO v0.8.0: HubSpot contact creation
-  // Required: hubspotAdapter.createContact({ email, name, city,
-  //   properties: { feast_role, feast_region, feast_interest_date },
-  //   tags: classification.suggestedPath.hubspotTags,
-  //   pipeline: classification.suggestedPath.hubspotPipeline
-  // })
-  console.log(
-    `[HubSpot stub] Would create contact: ${email} with intent: ${classification.intent}`
-  );
-  const hubspotSynced = false;
-
-  // Step 5: Send welcome email via Resend
+  // Step 4: Send welcome email via Resend
   const emailResult = await sendWelcomeEmail({
     to: email,
     template: classification.suggestedPath.emailTemplate,
     variables: { name, city },
   });
 
-  // Step 6: Update MemberIntent with email status
+  // Step 5: Update MemberIntent with email status
   await db.memberIntent.update({
     where: { id: memberIntent.id },
     data: {
@@ -91,6 +78,5 @@ export async function processOnboarding(
     classification,
     memberIntentId: memberIntent.id,
     emailSent: emailResult.success,
-    hubspotSynced,
   };
 }
